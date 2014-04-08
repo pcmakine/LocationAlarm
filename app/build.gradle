@@ -1,5 +1,10 @@
 apply plugin: 'android'
 
+dependencies {
+    compile 'com.android.support:appcompat-v7:+'
+    compile 'com.google.android.gms:play-services:4.0.30'
+}
+
 android {
     compileSdkVersion 19
     buildToolsVersion "19.0.3"
