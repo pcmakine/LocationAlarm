@@ -14,6 +14,10 @@ public class AddActivity extends ActionBarActivity {
         setContentView(R.layout.activity_add);
     }
 
+    public void add(){
+
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

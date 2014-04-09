@@ -8,13 +8,17 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.artofcodeapps.locationalarm.app.R;
+import com.artofcodeapps.locationalarm.app.domain.ReminderDAO;
+import com.artofcodeapps.locationalarm.app.services.Database;
 
 public class MenuActivity extends ActionBarActivity {
+    ReminderDAO reminders;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
+        reminders = new ReminderDAO(new Database(this));
     }
 
 
@@ -45,6 +49,7 @@ public class MenuActivity extends ActionBarActivity {
 
     public void startAddActivity(View view){
         Intent i = new Intent(this, AddActivity.class);
+        i.putExtra("ReminderDAO", reminders);
         this.startActivity(i);
     }
 }

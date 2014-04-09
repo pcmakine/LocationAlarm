@@ -1,9 +1,14 @@
 package com.artofcodeapps.locationalarm.app.services;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+
+import com.artofcodeapps.locationalarm.app.domain.Reminder;
+import com.artofcodeapps.locationalarm.app.domain.ReminderDAO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +40,56 @@ public class Database extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public List getReminders() {
-        return new ArrayList();
+    /**
+     * Inserts a new row into the database
+     * @param vals  The values to be inserted
+     * @param tableName The table where the values are to be inserted
+     * @return  The id of the new row. If the operation was unsuccessful, -1 is returned
+     */
+    public long insert(ContentValues vals, String tableName){
+        SQLiteDatabase db = this.getWritableDatabase();
+        long newRowId = db.insert(
+                tableName,
+                null,   //if there are no values in the values variable, the framework won't insert anything
+                vals);
+        db.close();
+        return newRowId;
+    }
+
+    public List getAll(){
+        SQLiteDatabase db = this.getReadableDatabase();
+/*        String[] projection = {
+                DbContract.ReminderEntry._ID,
+                DbContract.ReminderEntry.COLUMN_NAME_CONTENT,
+        };*/
+
+        String sortOrder = DbContract.ReminderEntry._ID + " DESC";
+
+        Cursor c = db.query(
+                DbContract.ReminderEntry.TABLE_NAME,
+                null, //reads all the fields
+                null,
+                null,
+                null,
+                null,
+                sortOrder);
+        return remindersAsList(c);
+    }
+
+    private ArrayList remindersAsList(Cursor c){
+        ArrayList list = new ArrayList();
+        if(!c.moveToFirst()){
+            do{
+                Reminder r = getOneReminder(c);
+                list.add(r);
+            }while(c.moveToNext());
+        }
+        return list;
+    }
+
+    public Reminder getOneReminder(Cursor c){
+        long id = c.getLong(c.getColumnIndexOrThrow(DbContract.ReminderEntry._ID));
+        String content = c.getString(c.getColumnIndexOrThrow(DbContract.ReminderEntry.COLUMN_NAME_CONTENT));
+        return new Reminder(content);
     }
 }

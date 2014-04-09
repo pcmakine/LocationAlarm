@@ -8,7 +8,7 @@ import android.provider.BaseColumns;
 public class DbContract {
     private static final String TEXT_TYPE = " TEXT";
     private static final String COMMA_SEP = ",";
-    private static final String SQL_CREATE_ENTRIES =
+    public static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + ReminderEntry.TABLE_NAME + " (" +
                     ReminderEntry._ID + " INTEGER PRIMARY KEY autoincrement" + COMMA_SEP  +
                     ReminderEntry.COLUMN_NAME_CONTENT + TEXT_TYPE +" )";
