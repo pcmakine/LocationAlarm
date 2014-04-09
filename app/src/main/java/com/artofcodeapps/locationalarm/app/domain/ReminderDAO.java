@@ -12,7 +12,7 @@ public class ReminderDAO implements Dao {
     private Database db;
 
     //todo move the db.getreadabledatabase call to asynctask
-    public ReminderDAO(Database db){
+    public ReminderDAO(){
         this.db = db;
         reminders = db.getReminders();
     }
@@ -26,10 +26,28 @@ public class ReminderDAO implements Dao {
         return reminders;
     }
 
-    public boolean addReminder(ReminderDAO reminder){
+    @Override
+    public boolean insert(Object r) {
+        Reminder reminder = (Reminder) r;
         if(reminder.getContent().isEmpty()){
             return false;
         }
-        return db.insertReminder(reminder);
+        return false;
     }
+
+    @Override
+    public boolean update(Object d, Object newData) {
+        return false;
+    }
+
+    @Override
+    public boolean remove(Object d) {
+        return false;
+    }
+
+    @Override
+    public boolean removeAll() {
+        return false;
+    }
+
 }

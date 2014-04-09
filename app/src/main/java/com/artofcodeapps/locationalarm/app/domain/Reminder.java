@@ -3,7 +3,7 @@ package com.artofcodeapps.locationalarm.app.domain;
 /**
  * Created by Pete on 9.4.2014.
  */
-public class Reminder {
+public class Reminder implements Data{
 
     private long id;
     private String content;
