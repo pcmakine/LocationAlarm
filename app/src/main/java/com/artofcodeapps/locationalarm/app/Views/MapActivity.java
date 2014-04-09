@@ -1,4 +1,4 @@
-package com.artofcodeapps.locationalarm.app;
+package com.artofcodeapps.locationalarm.app.Views;
 
 import android.content.Context;
 import android.location.Location;
@@ -9,9 +9,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.artofcodeapps.locationalarm.app.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -19,9 +19,8 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.List;
 
 
-public class MenuActivity extends ActionBarActivity {
+public class MapActivity extends ActionBarActivity {
     private LocationManager manager;
-    String name = "testi";
 
     // Google Map
     private GoogleMap googleMap;
@@ -29,15 +28,10 @@ public class MenuActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_menu);
+        setContentView(R.layout.activity_map);
         manager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         initializeMap();
     }
-
-    public String getName(){
-        return name;
-    }
-
     /**
      * function to load map. If map is not created it will create it for you
      * */
