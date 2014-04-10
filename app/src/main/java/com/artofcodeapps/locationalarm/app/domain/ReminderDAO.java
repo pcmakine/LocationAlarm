@@ -22,7 +22,7 @@ public class ReminderDAO implements Dao, Serializable {
         reminders = db.getAll();
     }
     public boolean noReminders(){
-        return reminders == null;
+        return reminders == null || reminders.size()== 0;
 
     }
 

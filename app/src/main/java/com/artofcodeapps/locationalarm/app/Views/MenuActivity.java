@@ -49,7 +49,11 @@ public class MenuActivity extends ActionBarActivity {
 
     public void startAddActivity(View view){
         Intent i = new Intent(this, AddActivity.class);
-        i.putExtra("ReminderDAO", reminders);
+        this.startActivity(i);
+    }
+
+    public void startListActivity(View view){
+        Intent i = new Intent(this, ListActivity.class);
         this.startActivity(i);
     }
 }

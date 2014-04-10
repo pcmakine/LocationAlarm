@@ -4,7 +4,14 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.Toast;
+
 import com.artofcodeapps.locationalarm.app.R;
+import com.artofcodeapps.locationalarm.app.domain.Reminder;
+import com.artofcodeapps.locationalarm.app.domain.ReminderDAO;
+import com.artofcodeapps.locationalarm.app.services.Database;
 
 public class AddActivity extends ActionBarActivity {
 
@@ -14,10 +21,22 @@ public class AddActivity extends ActionBarActivity {
         setContentView(R.layout.activity_add);
     }
 
-    public void add(){
+    public void add(View view){
+        ReminderDAO reminders = new ReminderDAO(new Database(this));
 
+        String content  = getEditTextContent(R.id.contentToSave);
+
+        Reminder r = new Reminder(content);
+        if(reminders.insert(r)){
+            Toast toast = Toast.makeText(this, "Reminder added successfully", Toast.LENGTH_LONG);
+            toast.show();
+        }
     }
 
+
+    private String getEditTextContent(int viewID){
+        return ((EditText) findViewById(viewID)).getText().toString();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

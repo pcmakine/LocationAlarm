@@ -78,7 +78,7 @@ public class Database extends SQLiteOpenHelper {
 
     private ArrayList remindersAsList(Cursor c){
         ArrayList list = new ArrayList();
-        if(!c.moveToFirst()){
+        if(c.moveToFirst()){
             do{
                 Reminder r = getOneReminder(c);
                 list.add(r);
