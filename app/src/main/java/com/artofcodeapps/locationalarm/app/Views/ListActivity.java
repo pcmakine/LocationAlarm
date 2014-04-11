@@ -1,13 +1,17 @@
 package com.artofcodeapps.locationalarm.app.Views;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -27,23 +31,39 @@ public class ListActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
         reminders = new ReminderDAO(new Database(this));
-        listReminders();
+       // buildDynamicViews();
     }
 
-    public void listReminders(){
+    public void buildDynamicViews(){
         LinearLayout contentHolder = (LinearLayout) findViewById(R.id.reminderHolder);
-
         if(reminders.noReminders()){
-            addViewToParent(makeTextView(getString(R.string.zero_reminders_notification)), contentHolder);
-            addViewToParent(makeButton(), contentHolder);
-
+            showNoRemindersText(contentHolder);
         }else{
-            List<Reminder> reminderList = reminders.getAll();
-            for(Reminder r: reminderList){
-                String content = r.getContent();
-                addViewToParent(makeTextView(content), contentHolder);
-            }
+            listReminders(contentHolder);
         }
+    }
+
+    public void listReminders(LinearLayout contentHolder){
+        List<Reminder> reminderList = reminders.getAll();
+        int index = 0;
+        for(Reminder r: reminderList){
+            String content = r.getContent();
+            contentHolder.addView(makeTextView(content));
+            if(!lastEntryInList(reminderList.size(), index)){
+              contentHolder.addView(makeSeparator());
+            }
+            index++;
+        }
+    }
+
+    public void showNoRemindersText(LinearLayout contentHolder){
+        contentHolder.addView(makeTextView(getString(R.string.zero_reminders_notification)));
+        contentHolder.addView(makeButton());
+    }
+
+    public boolean lastEntryInList(int listSize, int index){
+        if(index == listSize - 1) return true;
+        return false;
     }
 
     private LinearLayout.LayoutParams wrapContentParams(){
@@ -53,16 +73,14 @@ public class ListActivity extends ActionBarActivity {
         return params;
     }
 
-    private void addViewToParent(View view, LinearLayout parent){
-        LinearLayout.LayoutParams params;
-        params = wrapContentParams();
-        view.setLayoutParams(params);
-        parent.addView(view);
-    }
-
     private TextView makeTextView(String text){
         TextView tw = new TextView(this);
         tw.setText(text);
+        LinearLayout.LayoutParams params;
+        params = wrapContentParams();
+        tw.setLayoutParams(params);
+        tw.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+        params.setMargins(1,1, 1, 1);
         return tw;
     }
 
@@ -75,12 +93,38 @@ public class ListActivity extends ActionBarActivity {
                 startAddActivity(v);
             }
         });
+
         return btn;
     }
 
+    private View makeSeparator(){
+        View view = new View(this);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, convertDPtoPX(1));
+        view.setLayoutParams(params);
+        view.setBackgroundColor(Color.DKGRAY);
+        int width = view.getMeasuredWidth();
+        return view;
+    }
+
+    public int convertDPtoPX(int dp){
+        final float scale = this.getResources().getDisplayMetrics().density;
+        return (int) (1*scale + 0.5f);
+    }
+
+    public void removeReminder(View view){
+
+    }
+
+
     public void startAddActivity(View view){
-            Intent i = new Intent(this, AddActivity.class);
-            this.startActivity(i);
+        Intent i = new Intent(this, AddActivity.class);
+        this.startActivity(i);
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        buildDynamicViews();
     }
 
     @Override

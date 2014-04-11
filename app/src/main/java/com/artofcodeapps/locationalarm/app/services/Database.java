@@ -92,4 +92,12 @@ public class Database extends SQLiteOpenHelper {
         String content = c.getString(c.getColumnIndexOrThrow(DbContract.ReminderEntry.COLUMN_NAME_CONTENT));
         return new Reminder(content);
     }
+
+    public boolean deleteReminder(long id, String tableName){
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rowsAffected = db.delete(tableName, DbContract.ReminderEntry.COLUMN_NAME_ENTRY_ID + " =?",
+                new String[] {id+""});
+        db.close();
+        return rowsAffected == 0;
+    }
 }
