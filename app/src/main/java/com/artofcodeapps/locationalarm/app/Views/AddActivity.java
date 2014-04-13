@@ -31,6 +31,7 @@ public class AddActivity extends ActionBarActivity {
             Toast toast = Toast.makeText(this, "Reminder added successfully", Toast.LENGTH_LONG);
             toast.show();
         }
+        onBackPressed();
     }
 
 

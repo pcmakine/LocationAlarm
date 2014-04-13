@@ -18,7 +18,6 @@ public class MenuActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
-        reminders = new ReminderDAO(new Database(this));
     }
 
 

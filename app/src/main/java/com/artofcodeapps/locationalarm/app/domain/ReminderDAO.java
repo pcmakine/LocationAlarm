@@ -64,6 +64,8 @@ public class ReminderDAO implements Dao, Serializable {
 
     @Override
     public boolean remove(Object d) {
+        Reminder reminder = (Reminder) d;
+        db.deleteReminder(reminder.getId(), DbContract.ReminderEntry.TABLE_NAME);
         return false;
     }
 

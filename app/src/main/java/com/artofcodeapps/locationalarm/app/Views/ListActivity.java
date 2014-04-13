@@ -4,15 +4,15 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.artofcodeapps.locationalarm.app.R;
@@ -30,12 +30,11 @@ public class ListActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
-        reminders = new ReminderDAO(new Database(this));
-       // buildDynamicViews();
     }
 
     public void buildDynamicViews(){
         LinearLayout contentHolder = (LinearLayout) findViewById(R.id.reminderHolder);
+        contentHolder.removeAllViews();
         if(reminders.noReminders()){
             showNoRemindersText(contentHolder);
         }else{
@@ -43,14 +42,13 @@ public class ListActivity extends ActionBarActivity {
         }
     }
 
-    public void listReminders(LinearLayout contentHolder){
+    public void listReminders(LinearLayout listHolder){
         List<Reminder> reminderList = reminders.getAll();
         int index = 0;
         for(Reminder r: reminderList){
-            String content = r.getContent();
-            contentHolder.addView(makeTextView(content));
+            listHolder.addView(makeRow(r));
             if(!lastEntryInList(reminderList.size(), index)){
-              contentHolder.addView(makeSeparator());
+              listHolder.addView(makeSeparator());
             }
             index++;
         }
@@ -58,7 +56,7 @@ public class ListActivity extends ActionBarActivity {
 
     public void showNoRemindersText(LinearLayout contentHolder){
         contentHolder.addView(makeTextView(getString(R.string.zero_reminders_notification)));
-        contentHolder.addView(makeButton());
+        contentHolder.addView(makeAddViewLinkButton());
     }
 
     public boolean lastEntryInList(int listSize, int index){
@@ -68,8 +66,8 @@ public class ListActivity extends ActionBarActivity {
 
     private LinearLayout.LayoutParams wrapContentParams(){
         LinearLayout.LayoutParams params;
-        params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        params.gravity = Gravity.CENTER;
+        params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+       //params.gravity = Gravity.CENTER;
         return params;
     }
 
@@ -84,10 +82,10 @@ public class ListActivity extends ActionBarActivity {
         return tw;
     }
 
-    private Button makeButton(){
+    private Button makeAddViewLinkButton(){
         Button btn = new Button(this);
         btn.setLayoutParams(wrapContentParams());
-        btn.setText("Add a new reminder");
+        btn.setText(R.string.add_reminder_btn);
         btn.setOnClickListener(new Button.OnClickListener(){
             public void onClick(View v){
                 startAddActivity(v);
@@ -99,22 +97,55 @@ public class ListActivity extends ActionBarActivity {
 
     private View makeSeparator(){
         View view = new View(this);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, convertDPtoPX(1));
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, convertDPtoPX(1));
         view.setLayoutParams(params);
         view.setBackgroundColor(Color.DKGRAY);
-        int width = view.getMeasuredWidth();
         return view;
+    }
+
+    private LinearLayout makeRow(Reminder r){
+        LinearLayout row = new LinearLayout(this);
+        LinearLayout.LayoutParams params = wrapContentParams();
+        row.setLayoutParams(params);
+        TextView tw = makeTextView(r.getContent());
+        LinearLayout.LayoutParams childParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT, 1f);
+        Button btn = makeRemoveReminderButton(r);
+        tw.setLayoutParams(childParams);
+        tw.setEllipsize(TextUtils.TruncateAt.END);
+        tw.setSingleLine();
+
+        btn.setLayoutParams(childParams);
+        row.addView(tw);
+        row.addView(btn);
+        return row;
+    }
+
+    private RelativeLayout.LayoutParams getRelativeLayoutParams(int alignment, int width, int height){
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(width, height);
+        params.addRule(alignment);
+        return params;
+    }
+
+    private Button makeRemoveReminderButton(final Reminder r){
+        Button btn = new Button(this);
+//        btn.setLayoutParams(getRelativeLayoutParams(RelativeLayout.ALIGN_PARENT_RIGHT,
+    //            RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
+        btn.setText(R.string.remove_reminder);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reminders.remove(r);
+                onBackPressed();
+            }
+        });
+        return btn;
     }
 
     public int convertDPtoPX(int dp){
         final float scale = this.getResources().getDisplayMetrics().density;
-        return (int) (1*scale + 0.5f);
+        return (int) (dp*scale + 0.5f);
     }
-
-    public void removeReminder(View view){
-
-    }
-
 
     public void startAddActivity(View view){
         Intent i = new Intent(this, AddActivity.class);
@@ -124,6 +155,7 @@ public class ListActivity extends ActionBarActivity {
     @Override
     public void onResume(){
         super.onResume();
+        reminders = new ReminderDAO(new Database(this));
         buildDynamicViews();
     }
 
