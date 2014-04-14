@@ -25,6 +25,11 @@ public class ReminderDAO implements Dao, Serializable {
 
     }
 
+    @Override
+    public Object getOne(Long id) {
+        return db.getReminder(id);
+    }
+
     private void updateReminderAndList(Reminder r, long id){
         r.setId(id);
         reminders.add(r);
@@ -61,16 +66,13 @@ public class ReminderDAO implements Dao, Serializable {
         }
         ContentValues vals = values(reminder);
         int numOfRowsAffected = db.update(vals, DbContract.ReminderEntry.TABLE_NAME, DbContract.ReminderEntry._ID, String.valueOf(reminder.getId()));
-        if(numOfRowsAffected > 0) return true;
-
-        return false;
+        return numOfRowsAffected > 0;
     }
 
     @Override
     public boolean remove(Object d) {
         Reminder reminder = (Reminder) d;
-        db.deleteReminder(reminder.getId(), DbContract.ReminderEntry.TABLE_NAME);
-        return false;
+        return db.deleteReminder(reminder.getId(), DbContract.ReminderEntry.TABLE_NAME);
     }
 
     @Override

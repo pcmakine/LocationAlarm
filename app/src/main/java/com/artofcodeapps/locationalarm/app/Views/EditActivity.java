@@ -1,17 +1,61 @@
 package com.artofcodeapps.locationalarm.app.Views;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.artofcodeapps.locationalarm.app.R;
+import com.artofcodeapps.locationalarm.app.domain.Reminder;
+import com.artofcodeapps.locationalarm.app.domain.ReminderDAO;
+import com.artofcodeapps.locationalarm.app.services.Database;
 
 public class EditActivity extends ActionBarActivity {
+    private Reminder reminderToEdit;
+    private ReminderDAO reminders;
+    private EditText content;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit);
+        Intent intent = getIntent();
+        Long id = intent.getLongExtra("reminderID", -1);
+
+        reminders = new ReminderDAO(new Database(this));
+        reminderToEdit = (Reminder) reminders.getOne(id);
+        content = (EditText) findViewById(R.id.content);
+        if(reminderToEdit == null){
+            showErrorMessage();
+        }else{
+            content.setText(reminderToEdit.getContent());
+        }
+    }
+
+    public void showErrorMessage(){
+        RelativeLayout root = (RelativeLayout) findViewById(R.id.editRoot);
+        root.removeAllViews();
+        TextView tw = new TextView(this);
+        tw.setText(R.string.general_error + " " + R.string.reminder_not_retrieved);
+        root.addView(tw);
+    }
+
+    public void saveChanges(View view){
+        reminderToEdit.setContent(content.getText().toString());
+        if(reminders.update(reminderToEdit)){
+            Toast.makeText(this, R.string.successfully_edited, Toast.LENGTH_LONG).show();
+
+        }else{
+            Toast.makeText(this, R.string.general_error + " " + R.string.reminder_not_edited,
+                    Toast.LENGTH_LONG).show();
+        }
+        onBackPressed();
     }
 
 

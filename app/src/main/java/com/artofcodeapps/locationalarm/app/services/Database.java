@@ -90,7 +90,7 @@ public class Database extends SQLiteOpenHelper {
         return list;
     }
 
-    public Reminder getOneReminder(Cursor c){
+    private Reminder getOneReminder(Cursor c){
         long id = c.getLong(c.getColumnIndexOrThrow(DbContract.ReminderEntry._ID));
         String content = c.getString(c.getColumnIndexOrThrow(DbContract.ReminderEntry.COLUMN_NAME_CONTENT));
         Reminder r = new Reminder(content);
@@ -103,7 +103,7 @@ public class Database extends SQLiteOpenHelper {
         int rowsAffected = db.delete(tableName, DbContract.ReminderEntry._ID + " =?",
                 new String[] {id+""});
         db.close();
-        return rowsAffected == 0;
+        return rowsAffected != 0;
     }
 
     public int update(ContentValues vals, String tableName, String idRowName, String id){
@@ -111,6 +111,27 @@ public class Database extends SQLiteOpenHelper {
 
         return db.update(tableName, vals, idRowName + " = ?",
                 new String[] {id});
+    }
+
+    /**
+     * For now returns one reminder. Needs to be generalized
+     * @return
+     */
+    public Reminder getReminder(long id){
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(DbContract.ReminderEntry.TABLE_NAME, new String[] {
+                DbContract.ReminderEntry._ID, DbContract.ReminderEntry.COLUMN_NAME_CONTENT},
+                DbContract.ReminderEntry._ID + " = ?",
+                new String[] {String.valueOf(id)}, null, null, null, null);
+        if(cursor != null){
+            cursor.moveToFirst();
+        }else{
+            return null;
+        }
+        Reminder reminder = new Reminder(cursor.getString(
+                cursor.getColumnIndexOrThrow(DbContract.ReminderEntry.COLUMN_NAME_CONTENT)));
+        reminder.setId(id);
+        return reminder;
     }
 
 

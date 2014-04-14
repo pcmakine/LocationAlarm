@@ -6,6 +6,7 @@ import java.util.List;
  */
 public interface Dao {
     public List getAll();
+    public Object getOne(Long id);
     public boolean insert(Object data);
     public boolean update(Object newData);
     public boolean remove(Object data);

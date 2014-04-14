@@ -58,7 +58,12 @@ public class ListActivity extends ActionBarActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                reminders.remove(r);
+               if(reminders.remove(r)){
+                   Toast.makeText(getApplicationContext(), R.string.successfully_removed, Toast.LENGTH_LONG).show();
+               }else{
+                   Toast.makeText(getApplicationContext(), R.string.reminder_not_removed, Toast.LENGTH_LONG).show();
+               }
+
                 onBackPressed();
             }
         });

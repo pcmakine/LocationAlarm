@@ -28,7 +28,7 @@ public class AddActivity extends ActionBarActivity {
 
         Reminder r = new Reminder(content);
         if(reminders.insert(r)){
-            Toast toast = Toast.makeText(this, "Reminder added successfully", Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(this, R.string.successfully_added, Toast.LENGTH_LONG);
             toast.show();
         }
         onBackPressed();
