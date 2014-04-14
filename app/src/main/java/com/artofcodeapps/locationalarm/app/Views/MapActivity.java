@@ -7,16 +7,17 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.artofcodeapps.locationalarm.app.R;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
-
+import com.artofcodeapps.locationalarm.app.services.GeocoderTask;
+import com.google.android.gms.maps.*;
+import com.google.android.gms.maps.model.*;
 import java.util.List;
+import java.util.Locale;
 
 
 public class MapActivity extends ActionBarActivity {
@@ -24,12 +25,26 @@ public class MapActivity extends ActionBarActivity {
 
     // Google Map
     private GoogleMap googleMap;
+    MarkerOptions markerOptions;
+    LatLng latLng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         manager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        Button findLocationBtn = (Button) findViewById(R.id.findLocationBtn);
+        findLocationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EditText locationInput = (EditText) findViewById(R.id.locationInput);
+                String location = locationInput.getText().toString();
+                if(location!=null && !location.equals("")){
+                    new GeocoderTask(googleMap, getBaseContext()).execute(location);
+                }
+
+            }
+        });
         initializeMap();
     }
     /**
@@ -111,6 +126,4 @@ public class MapActivity extends ActionBarActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
-
 }
