@@ -17,13 +17,15 @@ configurations {
 }
 
 dependencies {
+    compile 'com.android.support:appcompat-v7:+'
+    compile 'com.google.android.gms:play-services:4.0.30'
     unitTestCompile files("$project.buildDir/classes/release")
     unitTestCompile 'junit:junit:4.10'
     unitTestCompile 'org.robolectric:robolectric:2.1.+'
     unitTestCompile 'com.google.android:android:4.0.1.2'
 
-    compile 'com.android.support:appcompat-v7:+'
-    compile 'com.google.android.gms:play-services:4.0.30'
+    
+    
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
 

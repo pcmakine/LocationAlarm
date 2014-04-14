@@ -20,6 +20,6 @@
     <!-- LIST ACTIVITY -->
     <string name="zero_reminders_notification">You don\'t have any reminders yet. Would you like to add some?</string>
     <string name="remove_reminder">Remove</string>
-
+    <string name="title_activity_edit">EditActivity</string>
 
 </resources>

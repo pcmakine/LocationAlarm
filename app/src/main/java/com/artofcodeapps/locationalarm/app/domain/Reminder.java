@@ -4,7 +4,7 @@ package com.artofcodeapps.locationalarm.app.domain;
  * Created by Pete on 9.4.2014.
  */
 public class Reminder implements Data{
-
+    String str = "  ";
     private long id;
     private String content;
 
@@ -31,6 +31,10 @@ public class Reminder implements Data{
     @Override
     public String toString() {
         return content;
+    }
+
+    public boolean hasContent(){
+        return content != null && !content.trim().equals(new String(""));
     }
 
 }

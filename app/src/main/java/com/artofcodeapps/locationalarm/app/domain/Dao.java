@@ -7,7 +7,7 @@ import java.util.List;
 public interface Dao {
     public List getAll();
     public boolean insert(Object data);
-    public boolean update(Object data, Object newData);
+    public boolean update(Object newData);
     public boolean remove(Object data);
     public boolean removeAll();
 }

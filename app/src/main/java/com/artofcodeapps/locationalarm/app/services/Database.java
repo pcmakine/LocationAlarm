@@ -16,6 +16,9 @@ import java.util.List;
 /**
  * Created by Pete on 9.4.2014.
  */
+
+/*Todo figure out how to generalize the class, so that it would also work for other objects than just
+    the reminders */
 public class Database extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "locAlarmDB";
@@ -102,4 +105,13 @@ public class Database extends SQLiteOpenHelper {
         db.close();
         return rowsAffected == 0;
     }
+
+    public int update(ContentValues vals, String tableName, String idRowName, String id){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        return db.update(tableName, vals, idRowName + " = ?",
+                new String[] {id});
+    }
+
+
 }

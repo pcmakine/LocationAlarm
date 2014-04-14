@@ -28,11 +28,11 @@ public class ListActivityTest {
         assertEquals("e84", tv.getText());
     }
 
-    @RunWith(RobolectricTestRunner.class)
+/*    @RunWith(RobolectricTestRunner.class)
     @Test
     public void testIfLasEntryInListGivesCorrectResultForTheLastOne(){
         ListActivity a = (ListActivity) Robolectric.buildActivity(ListActivity.class).create().get();
         boolean result = a.lastEntryInList(2, 1);
         assertEquals(true, result);
-    }
+    }*/
 }

@@ -1,7 +1,6 @@
 package com.artofcodeapps.locationalarm.app.domain;
 
 import android.content.ContentValues;
-import android.database.sqlite.SQLiteOpenHelper;
 
 import com.artofcodeapps.locationalarm.app.services.Database;
 import com.artofcodeapps.locationalarm.app.services.DbContract;
@@ -26,15 +25,6 @@ public class ReminderDAO implements Dao, Serializable {
 
     }
 
-    public ContentValues values(Reminder reminder){
-        if(reminder.getContent().isEmpty()){
-            return null;
-        }
-        ContentValues vals = new ContentValues();
-        vals.put(DbContract.ReminderEntry.COLUMN_NAME_CONTENT, reminder.getContent());
-        return vals;
-    }
-
     private void updateReminderAndList(Reminder r, long id){
         r.setId(id);
         reminders.add(r);
@@ -48,17 +38,31 @@ public class ReminderDAO implements Dao, Serializable {
     @Override
     public boolean insert(Object r) {
         Reminder reminder = (Reminder) r;
-        ContentValues vals = values(reminder);
-        if(vals == null){
+        if(!reminder.hasContent()){
             return false;
         }
+        ContentValues vals = values(reminder);
         long id = db.insert(vals, DbContract.ReminderEntry.TABLE_NAME);
         updateReminderAndList(reminder, id);
         return id != -1;
     }
 
+    public ContentValues values(Reminder reminder){
+        ContentValues vals = new ContentValues();
+        vals.put(DbContract.ReminderEntry.COLUMN_NAME_CONTENT, reminder.getContent());
+        return vals;
+    }
+
     @Override
-    public boolean update(Object d, Object newData) {
+    public boolean update(Object r) {
+        Reminder reminder = (Reminder) r;
+        if(!reminder.hasContent()){
+            return false;
+        }
+        ContentValues vals = values(reminder);
+        int numOfRowsAffected = db.update(vals, DbContract.ReminderEntry.TABLE_NAME, DbContract.ReminderEntry._ID, String.valueOf(reminder.getId()));
+        if(numOfRowsAffected > 0) return true;
+
         return false;
     }
 
