@@ -6,6 +6,7 @@ import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
+import com.artofcodeapps.locationalarm.app.Views.MapActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
@@ -24,10 +25,12 @@ public class GeocoderTask extends AsyncTask<String, Void, List<Address>> {
     private Context ctx;
     LatLng latLng;
     MarkerOptions markerOptions;
+    MapActivity activity;
 
-    public GeocoderTask(GoogleMap map, Context ctx){
+    public GeocoderTask(GoogleMap map, Context ctx, MapActivity activity){
         this.map = map;
         this.ctx = ctx;
+        this.activity = activity;
     }
 
     @Override

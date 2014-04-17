@@ -25,6 +25,7 @@
     <!-- MAP ACTIVITY -->
     <string name="find_location_btn">Find</string>
     <string name="find_location_hint">Enter address</string>
+    <string name="choose_location_btn">Choose location</string>
 
     <!-- ERRORS -->
     <string name="general_error">An error occured.</string>

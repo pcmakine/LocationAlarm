@@ -7,23 +7,23 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.artofcodeapps.locationalarm.app.R;
 import com.artofcodeapps.locationalarm.app.services.GeocoderTask;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
+
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 
 public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLongClickListener {
     private LocationManager manager;
+    private List<Marker> markers;
 
     // Google Map
     private GoogleMap googleMap;
@@ -31,6 +31,7 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        markers = new ArrayList();
         setContentView(R.layout.activity_map);
         manager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         Button findLocationBtn = (Button) findViewById(R.id.findLocationBtn);
@@ -40,7 +41,7 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
                 EditText locationInput = (EditText) findViewById(R.id.locationInput);
                 String location = locationInput.getText().toString();
                 if(location!=null && !location.equals("")){
-                    new GeocoderTask(googleMap, getBaseContext()).execute(location);
+                    new GeocoderTask(googleMap, getBaseContext(), MapActivity.this).execute(location);
                 }
 
             }
@@ -67,8 +68,6 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
 /*                Toast.makeText(getApplicationContext(),
                         R.string.loading_map_error, Toast.LENGTH_SHORT)
                         .show();*/
-            }else{
-                Toast.makeText(getApplicationContext(), "Map initialized", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -109,9 +108,18 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
         return bestResult;
     }
 
+    public void addMarker(Marker marker){
+        this.markers.add(marker);
+
+    }
+
     @Override
     public void onMapLongClick(LatLng point) {
-        Toast.makeText(getApplicationContext(), "long pressed, point=" + point, Toast.LENGTH_LONG).show();
+        addMarker(googleMap.addMarker(new MarkerOptions()
+                .position(point)
+                .title("")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                .draggable(true)));
     }
 
     @Override
@@ -124,8 +132,8 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
     public boolean onCreateOptionsMenu(Menu menu) {
 
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu, menu);
-        return true;
+        getMenuInflater().inflate(R.menu.map_activity_actions, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
