@@ -7,9 +7,11 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.artofcodeapps.locationalarm.app.R;
@@ -20,13 +22,11 @@ import java.util.List;
 import java.util.Locale;
 
 
-public class MapActivity extends ActionBarActivity {
+public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLongClickListener {
     private LocationManager manager;
 
     // Google Map
     private GoogleMap googleMap;
-    MarkerOptions markerOptions;
-    LatLng latLng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,19 +55,27 @@ public class MapActivity extends ActionBarActivity {
             googleMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(
                     R.id.map)).getMap();
             googleMap.setMyLocationEnabled(true);
-            googleMap.getUiSettings().setZoomControlsEnabled(false);
+            //    googleMap.getUiSettings().setZoomControlsEnabled(false);
             googleMap.getUiSettings().setRotateGesturesEnabled(false);
+            googleMap.setOnMapLongClickListener(this);
             Location loc = getLocation();
+            animateToLocation(loc);
 
-            CameraPosition pos = new CameraPosition.Builder().target(new LatLng(loc.getLatitude(), loc.getLongitude())).zoom(15).build();
-            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(pos));
             // check if map is created successfully or not
             if (googleMap == null) {
-                Toast.makeText(getApplicationContext(),
-                        "Sorry! unable to create maps", Toast.LENGTH_SHORT)
-                        .show();
+                new ErrorMessage(R.string.loading_map_error).show(getApplicationContext(), Toast.LENGTH_SHORT);
+/*                Toast.makeText(getApplicationContext(),
+                        R.string.loading_map_error, Toast.LENGTH_SHORT)
+                        .show();*/
+            }else{
+                Toast.makeText(getApplicationContext(), "Map initialized", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private void animateToLocation(Location loc){
+        CameraPosition pos = new CameraPosition.Builder().target(new LatLng(loc.getLatitude(), loc.getLongitude())).zoom(15).build();
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(pos));
     }
 
     private Location getLocation(){
@@ -102,6 +110,11 @@ public class MapActivity extends ActionBarActivity {
     }
 
     @Override
+    public void onMapLongClick(LatLng point) {
+        Toast.makeText(getApplicationContext(), "long pressed, point=" + point, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         initializeMap();
@@ -126,4 +139,8 @@ public class MapActivity extends ActionBarActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+
 }
+
+

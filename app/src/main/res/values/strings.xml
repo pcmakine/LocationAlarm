@@ -31,6 +31,7 @@
     <string name="reminder_not_edited">The reminder was not edited.</string>
     <string name="reminder_not_retrieved">The reminder could not be retrieved.</string>
     <string name="reminder_not_removed">The reminder could not be removed.</string>
+    <string name="loading_map_error">Sorry! Unable to create maps</string>
 
     <!-- ANNOUNCEMENTS -->
     <string name="successfully_edited">The reminder was successfully edited.</string>
