@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:awesomeapp="http://schemas.android.com/apk/res-auto">
     <!-- Search, should appear as action button -->
     <item android:id="@+id/action_search"
         android:orderInCategory="100"
         android:icon="@drawable/ic_action_search"
         android:title="search"
-        android:showAsAction="always" />
+        awesomeapp:showAsAction="ifRoom"/>
+    <item android:id="@+id/action_add_alarm"
+    android:orderInCategory="100"
+    android:icon="@drawable/ic_action_add_alarm"
+    android:title="add alarm"
+    awesomeapp:showAsAction="ifRoom"/>
+    <item android:id="@+id/action_discard"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_action_discard"
+        android:title="remove"
+        awesomeapp:showAsAction="ifRoom"/>
     <!-- Settings, should always be in the overflow -->
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"

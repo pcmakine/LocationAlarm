@@ -1,6 +1,7 @@
 package com.artofcodeapps.locationalarm.app.Views;
 
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.v7.app.ActionBarActivity;
@@ -21,9 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLongClickListener {
+public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLongClickListener,
+        GoogleMap.OnMarkerClickListener {
     private LocationManager manager;
-    private List<Marker> markers;
+    private Marker marker;
 
     // Google Map
     private GoogleMap googleMap;
@@ -31,7 +33,6 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        markers = new ArrayList();
         setContentView(R.layout.activity_map);
         manager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         Button findLocationBtn = (Button) findViewById(R.id.findLocationBtn);
@@ -59,6 +60,7 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
             //    googleMap.getUiSettings().setZoomControlsEnabled(false);
             googleMap.getUiSettings().setRotateGesturesEnabled(false);
             googleMap.setOnMapLongClickListener(this);
+            googleMap.setOnMarkerClickListener(this);
             Location loc = getLocation();
             animateToLocation(loc);
 
@@ -108,16 +110,37 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
         return bestResult;
     }
 
-    public void addMarker(Marker marker){
-        this.markers.add(marker);
+    public void setMarker(Marker marker){
+        this.marker = marker;
+    }
+    //todo show the search field. If the search button is not pressed do not show it at all
+    public void showSearch(){
+
+    }
+
+    public void startAddActivity(){
+        if(marker == null){
+            Toast.makeText(this, "No location chosen!", Toast.LENGTH_SHORT);
+        }else{
+            Intent intent = new Intent(this, AddActivity.class);
+            intent.putExtra("location", marker.getPosition());
+            this.startActivity(intent);
+        }
 
     }
 
     @Override
+    public boolean onMarkerClick(Marker marker) {
+        // selectedMarker = marker;
+        marker.remove();
+        return true;
+    }
+
+    @Override
     public void onMapLongClick(LatLng point) {
-        addMarker(googleMap.addMarker(new MarkerOptions()
+        this.marker = (googleMap.addMarker(new MarkerOptions()
                 .position(point)
-                .title("")
+                .title("Hello marker!")
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
                 .draggable(true)));
     }
@@ -130,7 +153,6 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.map_activity_actions, menu);
         return super.onCreateOptionsMenu(menu);
@@ -141,11 +163,16 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_search:
+                showSearch();
+                return true;
+            case R.id.action_add_alarm:
+                startAddActivity();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
 

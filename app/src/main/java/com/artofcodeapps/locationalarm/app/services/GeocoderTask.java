@@ -10,6 +10,7 @@ import com.artofcodeapps.locationalarm.app.Views.MapActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
@@ -50,7 +51,7 @@ public class GeocoderTask extends AsyncTask<String, Void, List<Address>> {
 
     @Override
     protected void onPostExecute(List<Address> addresses) {
-
+        Marker marker = null;
         if(addresses==null || addresses.size()==0){
             Toast.makeText(ctx.getApplicationContext(), "No Location found", Toast.LENGTH_SHORT).show();
         }
@@ -80,5 +81,6 @@ public class GeocoderTask extends AsyncTask<String, Void, List<Address>> {
             if(i==0)
                 map.animateCamera(CameraUpdateFactory.newLatLng(latLng));
         }
+        activity.setMarker(marker);
     }
 }

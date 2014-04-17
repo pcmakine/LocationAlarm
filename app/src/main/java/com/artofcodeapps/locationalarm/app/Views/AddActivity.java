@@ -12,12 +12,17 @@ import com.artofcodeapps.locationalarm.app.R;
 import com.artofcodeapps.locationalarm.app.domain.Reminder;
 import com.artofcodeapps.locationalarm.app.domain.ReminderDAO;
 import com.artofcodeapps.locationalarm.app.services.Database;
+import com.google.android.gms.maps.model.LatLng;
 
 public class AddActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        LatLng location = getIntent().getParcelableExtra("location");
+        if(location != null){
+            Toast.makeText(this, "Location is " + location.toString(), Toast.LENGTH_SHORT).show();
+        }
         setContentView(R.layout.activity_add);
     }
 
