@@ -6,6 +6,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.artofcodeapps.locationalarm.app.R;
@@ -20,10 +21,15 @@ public class AddActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LatLng location = getIntent().getParcelableExtra("location");
-        if(location != null){
-            Toast.makeText(this, "Location is " + location.toString(), Toast.LENGTH_SHORT).show();
-        }
         setContentView(R.layout.activity_add);
+        TextView locationText = (TextView) findViewById(R.id.location);
+        if(location != null){
+            locationText.setText(location.toString());
+        }
+/*        if(location != null){
+            Toast.makeText(this, "Location is " + location.toString(), Toast.LENGTH_SHORT).show();
+        }*/
+
     }
 
     public void add(View view){

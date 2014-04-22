@@ -1,11 +1,13 @@
 package com.artofcodeapps.locationalarm.app.domain;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 
 import com.artofcodeapps.locationalarm.app.services.Database;
 import com.artofcodeapps.locationalarm.app.services.DbContract;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,16 +20,47 @@ public class ReminderDAO implements Dao, Serializable {
     //todo move the db.getreadabledatabase call to asynctask
     public ReminderDAO(Database db){
         this.db = db;
-        reminders = db.getAll();
+        reminders = fetchAllFromDatabase();
     }
     public boolean noReminders(){
         return reminders == null || reminders.size()== 0;
 
     }
 
+    private List fetchAllFromDatabase(){
+        Cursor cursor = db.getAll(DbContract.ReminderEntry.TABLE_NAME, DbContract.ReminderEntry._ID + " DESC");
+        return remindersAsList(cursor);
+    }
+    private ArrayList remindersAsList(Cursor c){
+        ArrayList list = new ArrayList();
+        if(c.moveToFirst()){
+            do{
+                Reminder r = getOneReminder(c);
+                list.add(r);
+            }while(c.moveToNext());
+        }
+        return list;
+    }
+
+    private Reminder getOneReminder(Cursor c){
+        long id = c.getLong(c.getColumnIndexOrThrow(DbContract.ReminderEntry._ID));
+        String content = c.getString(c.getColumnIndexOrThrow(DbContract.ReminderEntry.COLUMN_NAME_CONTENT));
+        Reminder r = new Reminder(content);
+        r.setId(id);
+        return r;
+    }
+
     @Override
     public Object getOne(Long id) {
-        return db.getReminder(id);
+        Cursor cursor = db.getEntry(DbContract.ReminderEntry.TABLE_NAME, DbContract.ReminderEntry._ID, id);
+        if(cursor == null){
+            return null;
+        }
+        cursor.moveToFirst();
+        Reminder reminder = new Reminder(cursor.getString(
+                cursor.getColumnIndexOrThrow(DbContract.ReminderEntry.COLUMN_NAME_CONTENT)));
+        reminder.setId(id);
+        return reminder;
     }
 
     private void updateReminderAndList(Reminder r, long id){
@@ -72,7 +105,7 @@ public class ReminderDAO implements Dao, Serializable {
     @Override
     public boolean remove(Object d) {
         Reminder reminder = (Reminder) d;
-        return db.deleteReminder(reminder.getId(), DbContract.ReminderEntry.TABLE_NAME);
+        return db.deleteEntry(reminder.getId(), DbContract.ReminderEntry.TABLE_NAME, DbContract.ReminderEntry._ID);
     }
 
     @Override

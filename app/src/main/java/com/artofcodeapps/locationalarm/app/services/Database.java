@@ -22,7 +22,7 @@ import java.util.List;
 public class Database extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "locAlarmDB";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     public Database(Context c){
         super(c, DATABASE_NAME, null, DATABASE_VERSION);
@@ -30,7 +30,8 @@ public class Database extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(DbContract.createEntries());
+        db.execSQL(DbContract.SQL_CREATE_REMINDERS);
+        db.execSQL(DbContract.SQL_CREATE_LOCATIONS);
     }
 
     @Override
@@ -40,6 +41,7 @@ public class Database extends SQLiteOpenHelper {
                         + newVersion + ", which will destroy all old data"
         );
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.ReminderEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + DbContract.LocationEntry.TABLE_NAME);
         onCreate(db);
     }
 
@@ -59,48 +61,23 @@ public class Database extends SQLiteOpenHelper {
         return newRowId;
     }
 
-    public List getAll(){
+    public Cursor getAll(String tableName, String sortOrder){
         SQLiteDatabase db = this.getReadableDatabase();
-/*        String[] projection = {
-                DbContract.ReminderEntry._ID,
-                DbContract.ReminderEntry.COLUMN_NAME_CONTENT,
-        };*/
-
-        String sortOrder = DbContract.ReminderEntry._ID + " DESC";
 
         Cursor c = db.query(
-                DbContract.ReminderEntry.TABLE_NAME,
+                tableName,
                 null, //reads all the fields
                 null,
                 null,
                 null,
                 null,
                 sortOrder);
-        return remindersAsList(c);
+        return c;
     }
 
-    private ArrayList remindersAsList(Cursor c){
-        ArrayList list = new ArrayList();
-        if(c.moveToFirst()){
-            do{
-                Reminder r = getOneReminder(c);
-                list.add(r);
-            }while(c.moveToNext());
-        }
-        return list;
-    }
-
-    private Reminder getOneReminder(Cursor c){
-        long id = c.getLong(c.getColumnIndexOrThrow(DbContract.ReminderEntry._ID));
-        String content = c.getString(c.getColumnIndexOrThrow(DbContract.ReminderEntry.COLUMN_NAME_CONTENT));
-        Reminder r = new Reminder(content);
-        r.setId(id);
-        return r;
-    }
-
-    public boolean deleteReminder(long id, String tableName){
+    public boolean deleteEntry(long id, String tableName, String entryIdColumnName){
         SQLiteDatabase db = this.getWritableDatabase();
-        int rowsAffected = db.delete(tableName, DbContract.ReminderEntry._ID + " =?",
+        int rowsAffected = db.delete(tableName, entryIdColumnName+ " =?",
                 new String[] {id+""});
         db.close();
         return rowsAffected != 0;
@@ -108,7 +85,6 @@ public class Database extends SQLiteOpenHelper {
 
     public int update(ContentValues vals, String tableName, String idRowName, String id){
         SQLiteDatabase db = this.getWritableDatabase();
-
         return db.update(tableName, vals, idRowName + " = ?",
                 new String[] {id});
     }
@@ -117,21 +93,12 @@ public class Database extends SQLiteOpenHelper {
      * For now returns one reminder. Needs to be generalized
      * @return
      */
-    public Reminder getReminder(long id){
+    public Cursor getEntry(String tableName,String entryIdColumnName, long id){
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(DbContract.ReminderEntry.TABLE_NAME, new String[] {
-                DbContract.ReminderEntry._ID, DbContract.ReminderEntry.COLUMN_NAME_CONTENT},
-                DbContract.ReminderEntry._ID + " = ?",
+        Cursor cursor = db.query(tableName, null,   //null here returns all the columns
+                entryIdColumnName + " = ?",
                 new String[] {String.valueOf(id)}, null, null, null, null);
-        if(cursor != null){
-            cursor.moveToFirst();
-        }else{
-            return null;
-        }
-        Reminder reminder = new Reminder(cursor.getString(
-                cursor.getColumnIndexOrThrow(DbContract.ReminderEntry.COLUMN_NAME_CONTENT)));
-        reminder.setId(id);
-        return reminder;
+        return cursor;
     }
 
 
