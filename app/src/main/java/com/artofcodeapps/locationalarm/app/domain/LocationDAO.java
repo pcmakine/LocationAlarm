@@ -7,7 +7,6 @@ import com.artofcodeapps.locationalarm.app.services.Database;
 import com.artofcodeapps.locationalarm.app.services.DbContract;
 import com.google.android.gms.maps.model.LatLng;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,28 +23,10 @@ public class LocationDAO implements Dao {
     }
 
     private List fetchAllFromDatabase(){
-        Cursor cursor = db.getAll(DbContract.LocationEntry.TABLE_NAME, DbContract.LocationEntry._ID + " DESC");
-        return locationsAsList(cursor);
-    }
-    private ArrayList locationsAsList(Cursor c){
-        ArrayList list = new ArrayList();
-        if(c.moveToFirst()){
-            do{
-                Location loc = getOneLocation(c);
-                list.add(loc);
-            }while(c.moveToNext());
-        }
-        return list;
+        return db.getAll(DbContract.LocationEntry.TABLE_NAME, DbContract.LocationEntry._ID + " DESC", LocationDAO.class);
     }
 
-    private Location getOneLocation(Cursor c){
-        long id = c.getLong(c.getColumnIndexOrThrow(DbContract.LocationEntry._ID));
-        Location loc = new Location(getLatLng(c));
-        loc.setId(id);
-        return loc;
-    }
-
-    private LatLng getLatLng(Cursor c){
+    private static LatLng getLatLng(Cursor c){
         long lat = c.getLong(c.getColumnIndexOrThrow(DbContract.LocationEntry.COLUMN_NAME_LAT));
         long longitude = c.getLong(c.getColumnIndexOrThrow(DbContract.LocationEntry.COLUMN_NAME_LONG));
         return new LatLng(lat, longitude);
@@ -58,14 +39,7 @@ public class LocationDAO implements Dao {
 
     @Override
     public Object getOne(Long id) {
-        Cursor cursor = db.getEntry(DbContract.LocationEntry.TABLE_NAME, DbContract.LocationEntry._ID, id);
-        if(cursor == null){
-            return null;
-        }
-        cursor.moveToFirst();
-
-        Location loc = new Location(getLatLng(cursor));
-        loc.setId(id);
+        Location loc = (Location) db.getEntry(DbContract.LocationEntry.TABLE_NAME, DbContract.LocationEntry._ID, id, LocationDAO.class);
         return loc;
     }
 
@@ -74,13 +48,9 @@ public class LocationDAO implements Dao {
         Location loc = (Location) data;
         ContentValues vals = values(loc);
         long id = db.insert(vals, DbContract.LocationEntry.TABLE_NAME);
-        updateLocationAndList(loc, id);
-        return id != -1;
-    }
-
-    private void updateLocationAndList(Location loc, long id){
         loc.setId(id);
         locations.add(loc);
+        return id != -1;
     }
 
     public ContentValues values(Location loc){
@@ -108,4 +78,12 @@ public class LocationDAO implements Dao {
     public boolean removeAll() {
         return false;
     }
+
+    public static Location createOneEntry(Cursor c){
+        long id = c.getLong(c.getColumnIndexOrThrow(DbContract.LocationEntry._ID));
+        Location loc = new Location(getLatLng(c));
+        loc.setId(id);
+        return loc;
+    }
 }
+

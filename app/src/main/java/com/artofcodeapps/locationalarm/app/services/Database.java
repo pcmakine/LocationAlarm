@@ -7,9 +7,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.artofcodeapps.locationalarm.app.domain.Data;
 import com.artofcodeapps.locationalarm.app.domain.Reminder;
 import com.artofcodeapps.locationalarm.app.domain.ReminderDAO;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +25,7 @@ import java.util.List;
 public class Database extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "locAlarmDB";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     public Database(Context c){
         super(c, DATABASE_NAME, null, DATABASE_VERSION);
@@ -32,6 +35,7 @@ public class Database extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(DbContract.SQL_CREATE_REMINDERS);
         db.execSQL(DbContract.SQL_CREATE_LOCATIONS);
+        db.execSQL(DbContract.SQL_CREATE_REMINDER_LOCATION_LINKS);
     }
 
     @Override
@@ -42,6 +46,7 @@ public class Database extends SQLiteOpenHelper {
         );
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.ReminderEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.LocationEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + DbContract.ReminderLocationLinkEntry.TABLE_NAME);
         onCreate(db);
     }
 
@@ -61,10 +66,10 @@ public class Database extends SQLiteOpenHelper {
         return newRowId;
     }
 
-    public Cursor getAll(String tableName, String sortOrder){
+    public List getAll(String tableName, String sortOrder, Class c){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor c = db.query(
+        Cursor cursor = db.query(
                 tableName,
                 null, //reads all the fields
                 null,
@@ -72,7 +77,36 @@ public class Database extends SQLiteOpenHelper {
                 null,
                 null,
                 sortOrder);
-        return c;
+
+        return entriesAsList(cursor, c);
+    }
+
+    private List entriesAsList(Cursor cursor, Class c){
+        ArrayList list = new ArrayList();
+        if(cursor.moveToFirst()){
+            do{
+               Object data = makeOneEntry(cursor, c);
+                list.add(data);
+            }while(cursor.moveToNext());
+        }
+    return list;
+    }
+
+    private Object makeOneEntry(Cursor cursor, Class c){
+        Object data = null;
+        try {
+            Class[] cArg = new Class[1];
+            cArg[0] = Cursor.class;
+            Method m = c.getMethod("createOneEntry", Cursor.class);
+            data = m.invoke(null, cursor);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        return data;
     }
 
     public boolean deleteEntry(long id, String tableName, String entryIdColumnName){
@@ -93,12 +127,19 @@ public class Database extends SQLiteOpenHelper {
      * For now returns one reminder. Needs to be generalized
      * @return
      */
-    public Cursor getEntry(String tableName,String entryIdColumnName, long id){
+    public Object getEntry(String tableName,String entryIdColumnName, long id, Class c){
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(tableName, null,   //null here returns all the columns
                 entryIdColumnName + " = ?",
                 new String[] {String.valueOf(id)}, null, null, null, null);
-        return cursor;
+
+        if(cursor == null){
+            return null;
+        }
+
+        cursor.moveToFirst();
+        Object data = makeOneEntry(cursor, c);
+        return data;
     }
 
 
