@@ -55,7 +55,7 @@ public class DbContract {
     }
 
     public static abstract class ReminderLocationLinkEntry implements BaseColumns{
-        public static final String TABLE_NAME = "ReminderLocationLinks";
+        public static final String TABLE_NAME = "links";
         public static final String COLUMN_NAME_REMINDERID = "reminder_id";
         public static final String COLUMN_NAME_LOCATIONID = "location_id";
     }

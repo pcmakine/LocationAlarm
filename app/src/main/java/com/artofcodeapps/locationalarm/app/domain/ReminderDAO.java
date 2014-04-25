@@ -2,24 +2,24 @@ package com.artofcodeapps.locationalarm.app.domain;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.SQLException;
 
 import com.artofcodeapps.locationalarm.app.services.Database;
 import com.artofcodeapps.locationalarm.app.services.DbContract;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Pete on 9.4.2014.
  */
 public class ReminderDAO implements Dao, Serializable {
-    private List reminders;
-    private Database db;
+    private List<Reminder> reminders;
+    private static Database db;
 
     //todo move the db.getreadabledatabase call to asynctask
-    public ReminderDAO(Database db){
-        this.db = db;
+    public ReminderDAO(Database database){
+        db = database;
         reminders = fetchAllFromDatabase();
     }
     public boolean noReminders(){
@@ -27,7 +27,15 @@ public class ReminderDAO implements Dao, Serializable {
     }
 
     private List fetchAllFromDatabase(){
-        return db.getAll(DbContract.ReminderEntry.TABLE_NAME, DbContract.ReminderEntry._ID + " DESC", ReminderDAO.class);
+        List<Reminder> list = db.getAll(DbContract.ReminderEntry.TABLE_NAME, DbContract.ReminderEntry._ID + " DESC", ReminderDAO.class);
+        return list;
+    }
+
+    private static List getReminderLocations(long reminderID){
+        String sql = "SELECT locations._id, locations.lat, locations.long FROM locations, links, reminders where locations._id = links.location_id AND " + reminderID + " = links.reminder_id";
+        List locList = db.executeRaw(sql, LocationDAO.class);
+
+        return locList;
     }
 
     @Override
@@ -53,16 +61,16 @@ public class ReminderDAO implements Dao, Serializable {
     }
 
     @Override
-    public boolean insert(Object r) {
+    public long insert(Object r) throws SQLException {
         Reminder reminder = (Reminder) r;
         if(!reminder.hasContent()){
-            return false;
+            return -1;
         }
         ContentValues vals = values(reminder);
         long id = db.insert(vals, DbContract.ReminderEntry.TABLE_NAME);
         reminder.setId(id);
-        reminders.add(r);
-        return id != -1;
+        reminders.add(reminder);
+        return id;
     }
 
     public ContentValues values(Reminder reminder){
@@ -88,7 +96,18 @@ public class ReminderDAO implements Dao, Serializable {
         String content = c.getString(c.getColumnIndexOrThrow(DbContract.ReminderEntry.COLUMN_NAME_CONTENT));
         Reminder r = new Reminder(content);
         r.setId(id);
+        r.setLocations(getReminderLocations(id));
         return r;
+    }
+
+    //todo make this more efficient
+    public Reminder getReminderFromMemory(long id){
+        for(Reminder r: reminders){
+            if(r.getId() == id){
+                return r;
+            }
+        }
+        return null;
     }
 
 }

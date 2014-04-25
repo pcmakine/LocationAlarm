@@ -12,9 +12,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.artofcodeapps.locationalarm.app.R;
+import com.artofcodeapps.locationalarm.app.domain.Location;
 import com.artofcodeapps.locationalarm.app.domain.Reminder;
 import com.artofcodeapps.locationalarm.app.domain.ReminderDAO;
 import com.artofcodeapps.locationalarm.app.services.Database;
+
+import java.util.List;
 
 public class EditActivity extends ActionBarActivity {
     private Reminder reminderToEdit;
@@ -31,6 +34,12 @@ public class EditActivity extends ActionBarActivity {
         reminders = new ReminderDAO(new Database(this));
         reminderToEdit = (Reminder) reminders.getOne(id);
         content = (EditText) findViewById(R.id.content);
+        TextView locationText = (TextView) findViewById(R.id.locationText);
+        List<Location> locs = reminderToEdit.getLocations();
+        if(!locs.isEmpty()){
+            locationText.setText(locs.get(0).toString());
+        }
+
         if(reminderToEdit == null){
             showErrorMessage();
         }else{

@@ -10,17 +10,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.artofcodeapps.locationalarm.app.R;
+import com.artofcodeapps.locationalarm.app.domain.Location;
 import com.artofcodeapps.locationalarm.app.domain.Reminder;
-import com.artofcodeapps.locationalarm.app.domain.ReminderDAO;
-import com.artofcodeapps.locationalarm.app.services.Database;
+import com.artofcodeapps.locationalarm.app.services.DataManager;
 import com.google.android.gms.maps.model.LatLng;
 
 public class AddActivity extends ActionBarActivity {
+    private LatLng location;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        LatLng location = getIntent().getParcelableExtra("location");
+        this.location = getIntent().getParcelableExtra("location");
         setContentView(R.layout.activity_add);
         TextView locationText = (TextView) findViewById(R.id.location);
         if(location != null){
@@ -33,16 +34,22 @@ public class AddActivity extends ActionBarActivity {
     }
 
     public void add(View view){
-        ReminderDAO reminders = new ReminderDAO(new Database(this));
-
+/*        ReminderDAO reminders = new ReminderDAO(new Database(this));
+        LocationDAO locations = new LocationDAO(new Database(this));
         String content  = getEditTextContent(R.id.contentToSave);
-
         Reminder r = new Reminder(content);
-        if(reminders.insert(r)){
+        boolean remdinerInsertSuccess = reminders.insert(r);*/
+        String content  = getEditTextContent(R.id.contentToSave);
+        Reminder r = new Reminder(content);
+
+        if(DataManager.saveReminder(r, new Location(location), this)){
             Toast toast = Toast.makeText(this, R.string.successfully_added, Toast.LENGTH_LONG);
             toast.show();
+            onBackPressed();
+        }else{
+            Toast toast = Toast.makeText(this, R.string.reminder_not_added, Toast.LENGTH_LONG);
+            toast.show();
         }
-        onBackPressed();
     }
 
 

@@ -22,6 +22,10 @@
     <string name="remove_reminder">Remove</string>
     <string name="title_activity_edit">EditActivity</string>
 
+    <!-- EDIT ACTIVITY -->
+    <string name="location">Location</string>
+
+
     <!-- MAP ACTIVITY -->
     <string name="find_location_btn">Find</string>
     <string name="find_location_hint">Enter address</string>
@@ -31,6 +35,7 @@
     <string name="general_error">An error occured.</string>
     <string name="reminder_not_edited">The reminder was not edited.</string>
     <string name="reminder_not_retrieved">The reminder could not be retrieved.</string>
+    <string name="reminder_not_added">The reminder could not be added.</string>
     <string name="reminder_not_removed">The reminder could not be removed.</string>
     <string name="loading_map_error">Sorry! Unable to create maps</string>
 

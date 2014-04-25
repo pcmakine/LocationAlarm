@@ -44,13 +44,13 @@ public class LocationDAO implements Dao {
     }
 
     @Override
-    public boolean insert(Object data) {
+    public long insert(Object data) {
         Location loc = (Location) data;
         ContentValues vals = values(loc);
         long id = db.insert(vals, DbContract.LocationEntry.TABLE_NAME);
         loc.setId(id);
         locations.add(loc);
-        return id != -1;
+        return id;
     }
 
     public ContentValues values(Location loc){
