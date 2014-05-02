@@ -45,16 +45,17 @@ public class ListActivity extends ActionBarActivity {
     public void listReminders(LinearLayout listHolder){
         List<Reminder> reminderList = reminders.getAll();
         for(int i = 0; i < reminderList.size(); i++){
-            Row row = new Row(this, new float[]{2, 1});
+            Row row = new Row(this, new float[]{15, 1});
             TextView tw = row.insertText(reminderList.get(i).getContent(), LinearLayout.LayoutParams.WRAP_CONTENT, 0);
             setOnTouchListener(reminderList.get(i), tw);
-            Button btn = row.insertButton(R.string.remove_reminder, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+            ImageButton btn = row.insertImageButton(R.drawable.ic_action_discard, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
             setButtonListener(btn, reminderList.get(i));
+        //    row.finishAlignment();
             listHolder.addView(row);
         }
     }
 
-    private void setButtonListener(Button btn, final Reminder r){
+    private void setButtonListener(ImageButton btn, final Reminder r){
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -1,43 +1,9 @@
 apply plugin: 'android'
-
-sourceSets {
-    unitTest {
-        java.srcDir file('src/test/java')
-        resources.srcDir file('src/test/res')
-    }
-    androidTest {
-        java.srcDir file('src/test/java')
-        resources.srcDir file('src/test/res')
-    }
-}
-
-configurations {
-    unitTestCompile.extendsFrom runtime
-    unitTestRuntime.extendsFrom unitTestCompile
-}
-
-dependencies {
-    compile "com.android.support:appcompat-v7:18.0.+"
-    compile 'com.google.android.gms:play-services:4.0.30'
-    unitTestCompile files("$project.buildDir/classes/release")
-    unitTestCompile 'junit:junit:4.10'
-    unitTestCompile 'org.robolectric:robolectric:2.1.+'
-    unitTestCompile 'com.google.android:android:4.0.1.2'
-
-    
-    
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-}
-
-task unitTest(type:Test, dependsOn: assemble) {
-    testClassesDir = project.sourceSets.unitTest.output.classesDir
-    classpath = project.sourceSets.unitTest.runtimeClasspath
-}
-check.dependsOn unitTest
+apply plugin: 'robolectric'
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.3"
+    buildToolsVersion '19.0.3'
 
     defaultConfig {
         minSdkVersion 8
@@ -51,4 +17,81 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+
+    sourceSets {
+        instrumentTest.setRoot('src/test')
+
+        unitTest {
+            java.srcDir file('src/test/java')
+            resources.srcDir file('src/test/res')
+        }
+        androidTest {
+            java.srcDir file('src/test/java')
+            resources.srcDir file('src/test/res')
+        }
+    }
+}
+
+configurations {
+    unitTestCompile.extendsFrom runtime
+    unitTestRuntime.extendsFrom unitTestCompile
+}
+
+/*task unitTest(type:Test, dependsOn: assemble) {
+    testClassesDir = project.android.sourceSets.unitTest.output.classesDir
+    classpath = project.android.sourceSets.unitTest.runtimeClasspath
+}
+check.dependsOn unitTest*/
+
+
+
+dependencies {
+    compile 'com.android.support:appcompat-v7:19.0.+'
+    compile 'com.google.android.gms:play-services:4.0.30'
+    androidTestCompile 'org.robolectric:robolectric:2.2'
+    androidTestCompile 'junit:junit:4.+'
+
+    unitTestCompile files("$project.buildDir/classes/release")
+    /*    unitTestCompile files("$project.buildDir/classes/release")
+            unitTestCompile 'junit:junit:4.10'
+            unitTestCompile 'org.robolectric:robolectric:2.1.+'
+            unitTestCompile 'com.google.android:android:4.0.1.2'*/
+    //    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(dir: 'libs', include: '*.jar')
+}
+
+
+task addTest {
+    def src = ['src/test/java']
+    def file = file("app.iml")
+
+    doLast {
+        try {
+            def parsedXml = (new XmlParser()).parse(file)
+            def node = parsedXml.component[1].content[0]
+            src.each {
+                def path = 'file://$MODULE_DIR$/' + "${it}"
+                def set = node.find { it.@url == path }
+                if (set == null) {
+                    new Node(node, 'sourceFolder', ['url': 'file://$MODULE_DIR$/' + "${it}", 'isTestSource': "true"])
+                    def writer = new StringWriter()
+                    new XmlNodePrinter(new PrintWriter(writer)).print(parsedXml)
+                    file.text = writer.toString()
+                }
+            }
+        } catch (FileNotFoundException e) {
+            // nop, iml not found
+        }
+    }
+}
+
+// prevent the "superClassName is empty" error for classes not annotated as tests
+tasks.withType(Test) {
+    scanForTestClasses = false
+    include "**/*Test.class" // whatever Ant pattern matches your test class files
+}
+
+// always do the addtest on prebuild
+gradle.projectsEvaluated {
+    preBuild.dependsOn(addTest)
 }

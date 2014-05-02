@@ -34,7 +34,6 @@ public class ReminderDAO implements Dao, Serializable {
     private static List getReminderLocations(long reminderID){
         String sql = "SELECT locations._id, locations.lat, locations.long FROM locations, links, reminders where locations._id = links.location_id AND " + reminderID + " = links.reminder_id";
         List locList = db.executeRaw(sql, LocationDAO.class);
-
         return locList;
     }
 

@@ -26,12 +26,6 @@ public class LocationDAO implements Dao {
         return db.getAll(DbContract.LocationEntry.TABLE_NAME, DbContract.LocationEntry._ID + " DESC", LocationDAO.class);
     }
 
-    private static LatLng getLatLng(Cursor c){
-        long lat = c.getLong(c.getColumnIndexOrThrow(DbContract.LocationEntry.COLUMN_NAME_LAT));
-        long longitude = c.getLong(c.getColumnIndexOrThrow(DbContract.LocationEntry.COLUMN_NAME_LONG));
-        return new LatLng(lat, longitude);
-    }
-
     @Override
     public List getAll() {
         return locations;
@@ -84,6 +78,12 @@ public class LocationDAO implements Dao {
         Location loc = new Location(getLatLng(c));
         loc.setId(id);
         return loc;
+    }
+
+    private static LatLng getLatLng(Cursor c){
+        double lat = c.getDouble(c.getColumnIndexOrThrow(DbContract.LocationEntry.COLUMN_NAME_LAT));
+        double longitude = c.getDouble(c.getColumnIndexOrThrow(DbContract.LocationEntry.COLUMN_NAME_LONG));
+        return new LatLng(lat, longitude);
     }
 }
 
