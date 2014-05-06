@@ -80,12 +80,5 @@ public class Row extends LinearLayout {
         params.gravity = Gravity.CENTER_VERTICAL;
         return params;
     }
-
-    public void finishAlignment(){
-        LinearLayout.LayoutParams leftParams = new LayoutParams(0, rightColumn.getHeight(), 1);
-        leftColumn.setLayoutParams(leftParams);
-
-    }
-
 }
 

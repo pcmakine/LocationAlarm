@@ -10,7 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.artofcodeapps.locationalarm.app.R;
-import com.artofcodeapps.locationalarm.app.domain.Location;
+import com.artofcodeapps.locationalarm.app.domain.ReminderLocation;
 import com.artofcodeapps.locationalarm.app.domain.Reminder;
 import com.artofcodeapps.locationalarm.app.services.DataManager;
 import com.google.android.gms.maps.model.LatLng;
@@ -42,7 +42,7 @@ public class AddActivity extends ActionBarActivity {
         String content  = getEditTextContent(R.id.contentToSave);
         Reminder r = new Reminder(content);
 
-        if(DataManager.saveReminder(r, new Location(location), this)){
+        if(DataManager.saveReminder(r, new ReminderLocation(location), this)){
             Toast toast = Toast.makeText(this, R.string.successfully_added, Toast.LENGTH_LONG);
             toast.show();
             onBackPressed();

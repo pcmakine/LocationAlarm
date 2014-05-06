@@ -26,7 +26,7 @@ import java.util.List;
 public class Database extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "locAlarmDB";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
 
     public Database(Context c) {
         super(c, DATABASE_NAME, null, DATABASE_VERSION);
@@ -49,6 +49,14 @@ public class Database extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.LocationEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.ReminderLocationLinkEntry.TABLE_NAME);
         onCreate(db);
+    }
+
+    @Override
+    public void onOpen(SQLiteDatabase db){
+        super.onOpen(db);
+        if(!db.isReadOnly()){
+            db.execSQL("PRAGMA foreign_keys = ON;");
+        }
     }
 
     /**
@@ -191,9 +199,7 @@ public class Database extends SQLiteOpenHelper {
                 logColumnNames(table.getColumnNames());
             c.moveToNext();
         }
-
     }
-
 
     private void logColumnNames(String[] names){
         for(String s: names){

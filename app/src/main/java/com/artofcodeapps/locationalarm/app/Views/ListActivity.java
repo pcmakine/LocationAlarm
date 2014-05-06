@@ -50,7 +50,6 @@ public class ListActivity extends ActionBarActivity {
             setOnTouchListener(reminderList.get(i), tw);
             ImageButton btn = row.insertImageButton(R.drawable.ic_action_discard, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
             setButtonListener(btn, reminderList.get(i));
-        //    row.finishAlignment();
             listHolder.addView(row);
         }
     }

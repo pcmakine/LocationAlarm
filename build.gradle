@@ -11,6 +11,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:0.9.+'
         classpath 'junit:junit:4.+'
         classpath 'com.novoda.gradle:robolectric-plugin:0.0.1-SNAPSHOT'
+        classpath group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
     }
 }
 

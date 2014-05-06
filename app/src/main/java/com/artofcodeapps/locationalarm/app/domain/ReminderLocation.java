@@ -5,22 +5,22 @@ import com.google.android.gms.maps.model.LatLng;
 /**
  * Created by Pete on 23.4.2014.
  */
-public class Location implements Trigger{
+public class ReminderLocation implements Trigger{
     private LatLng location;
     private long id;
     private int radiusInMeters;
     private static final int DEFAULT_RADIUS = 500;
 
-    public Location(LatLng location){
+    public ReminderLocation(LatLng location){
         this(location, DEFAULT_RADIUS);
     }
 
-    public Location(LatLng location, int radiusInMeters){
+    public ReminderLocation(LatLng location, int radiusInMeters){
         this.location = location;
         this.radiusInMeters = radiusInMeters;
     }
 
-    public LatLng getLocation() {
+    public LatLng getLatLng() {
         return location;
     }
 

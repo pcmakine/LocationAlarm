@@ -33,13 +33,13 @@ public class LocationDAO implements Dao {
 
     @Override
     public Object getOne(Long id) {
-        Location loc = (Location) db.getEntry(DbContract.LocationEntry.TABLE_NAME, DbContract.LocationEntry._ID, id, LocationDAO.class);
+        ReminderLocation loc = (ReminderLocation) db.getEntry(DbContract.LocationEntry.TABLE_NAME, DbContract.LocationEntry._ID, id, LocationDAO.class);
         return loc;
     }
 
     @Override
     public long insert(Object data) {
-        Location loc = (Location) data;
+        ReminderLocation loc = (ReminderLocation) data;
         ContentValues vals = values(loc);
         long id = db.insert(vals, DbContract.LocationEntry.TABLE_NAME);
         loc.setId(id);
@@ -47,16 +47,16 @@ public class LocationDAO implements Dao {
         return id;
     }
 
-    public ContentValues values(Location loc){
+    public ContentValues values(ReminderLocation loc){
         ContentValues vals = new ContentValues();
-        vals.put(DbContract.LocationEntry.COLUMN_NAME_LAT, loc.getLocation().latitude);
-        vals.put(DbContract.LocationEntry.COLUMN_NAME_LONG, loc.getLocation().longitude);
+        vals.put(DbContract.LocationEntry.COLUMN_NAME_LAT, loc.getLatLng().latitude);
+        vals.put(DbContract.LocationEntry.COLUMN_NAME_LONG, loc.getLatLng().longitude);
         return vals;
     }
 
     @Override
     public boolean update(Object newData) {
-        Location loc = (Location) newData;
+        ReminderLocation loc = (ReminderLocation) newData;
         ContentValues vals = values(loc);
         int numOfRowsAffected = db.update(vals, DbContract.LocationEntry.TABLE_NAME, DbContract.LocationEntry._ID, String.valueOf(loc.getId()));
         return numOfRowsAffected > 0;
@@ -64,7 +64,7 @@ public class LocationDAO implements Dao {
 
     @Override
     public boolean remove(Object data) {
-        Location loc = (Location) data;
+        ReminderLocation loc = (ReminderLocation) data;
         return db.deleteEntry(loc.getId(), DbContract.LocationEntry.TABLE_NAME, DbContract.LocationEntry._ID);
     }
 
@@ -73,9 +73,9 @@ public class LocationDAO implements Dao {
         return false;
     }
 
-    public static Location createOneEntry(Cursor c){
+    public static ReminderLocation createOneEntry(Cursor c){
         long id = c.getLong(c.getColumnIndexOrThrow(DbContract.LocationEntry._ID));
-        Location loc = new Location(getLatLng(c));
+        ReminderLocation loc = new ReminderLocation(getLatLng(c));
         loc.setId(id);
         return loc;
     }

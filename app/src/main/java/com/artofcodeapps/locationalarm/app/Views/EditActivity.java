@@ -12,7 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.artofcodeapps.locationalarm.app.R;
-import com.artofcodeapps.locationalarm.app.domain.Location;
+import com.artofcodeapps.locationalarm.app.domain.ReminderLocation;
 import com.artofcodeapps.locationalarm.app.domain.Reminder;
 import com.artofcodeapps.locationalarm.app.domain.ReminderDAO;
 import com.artofcodeapps.locationalarm.app.services.Database;
@@ -35,7 +35,7 @@ public class EditActivity extends ActionBarActivity {
         reminderToEdit = (Reminder) reminders.getOne(id);
         content = (EditText) findViewById(R.id.content);
         TextView locationText = (TextView) findViewById(R.id.locationText);
-        List<Location> locs = reminderToEdit.getLocations();
+        List<ReminderLocation> locs = reminderToEdit.getReminderLocations();
         if(!locs.isEmpty()){
             locationText.setText(locs.get(0).toString());
         }

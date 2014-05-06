@@ -12,6 +12,7 @@ public class DbContract {
     private static final String REFS = " REFERENCES ";
     private static final String FKEY = " FOREIGN KEY ";
     private static final String PKEY = " PRIMARY KEY ";
+    private static final String ON_DEL_CASCADE = " ON DELETE CASCADE";
     private static final String COMMA_SEP = ",";
     public static final String SQL_CREATE_REMINDERS =
             "CREATE TABLE " + ReminderEntry.TABLE_NAME + " (" +
@@ -26,7 +27,7 @@ public class DbContract {
                     LocationEntry.COLUMN_NAME_LAT + REAL_TYPE  + COMMA_SEP +
                     LocationEntry.COLUMN_NAME_LONG + REAL_TYPE + COMMA_SEP +
                     FKEY + "(" + LocationEntry._ID + ")" + REFS + ReminderLocationLinkEntry.TABLE_NAME + "(" +
-                    ReminderLocationLinkEntry.COLUMN_NAME_LOCATIONID +"))";
+                    ReminderLocationLinkEntry.COLUMN_NAME_LOCATIONID + "))";
 
     public static final String SQL_CREATE_REMINDER_LOCATION_LINKS =
             "CREATE TABLE " + ReminderLocationLinkEntry.TABLE_NAME + " (" +
@@ -35,7 +36,7 @@ public class DbContract {
                     FKEY + "(" + ReminderLocationLinkEntry.COLUMN_NAME_LOCATIONID + ")" +
                     REFS + LocationEntry.TABLE_NAME + "(" + LocationEntry._ID + ")" + COMMA_SEP +
                     FKEY + "(" + ReminderLocationLinkEntry.COLUMN_NAME_REMINDERID + ")" +
-                    REFS + ReminderEntry.TABLE_NAME + "(" + ReminderEntry._ID+ ")" + COMMA_SEP +
+                    REFS + ReminderEntry.TABLE_NAME + "(" + ReminderEntry._ID + ")" + COMMA_SEP +
                     PKEY + "("  + ReminderLocationLinkEntry.COLUMN_NAME_LOCATIONID + COMMA_SEP +
                     ReminderLocationLinkEntry.COLUMN_NAME_REMINDERID +") )";
 

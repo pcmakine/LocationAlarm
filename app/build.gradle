@@ -48,6 +48,7 @@ check.dependsOn unitTest*/
 dependencies {
     compile 'com.android.support:appcompat-v7:19.0.+'
     compile 'com.google.android.gms:play-services:4.0.30'
+    compile 'org.apache.commons:commons-lang3:3.0'
     androidTestCompile 'org.robolectric:robolectric:2.2'
     androidTestCompile 'junit:junit:4.+'
 

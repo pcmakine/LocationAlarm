@@ -10,11 +10,17 @@ public class Reminder implements Data{
     private long id;
     private String content;
     private Alarm alarm;
-    private List<Location> locations;
+    private List<ReminderLocation> reminderLocations;
 
     public Reminder(String content) {
         this.content = content;
-        this.locations = new ArrayList();
+        this.reminderLocations = new ArrayList();
+    }
+
+    public Reminder(long id, String content, List<ReminderLocation> reminderLocations){
+        this.id = id;
+        this.content = content;
+        this.reminderLocations = reminderLocations;
     }
 
     public long getId() {
@@ -41,9 +47,9 @@ public class Reminder implements Data{
         return this.alarm;
     }
 
-    public void setLocations(List locations){
-        if(locations != null){
-            this.locations = locations;
+    public void setReminderLocations(List reminderLocations){
+        if(reminderLocations != null){
+            this.reminderLocations = reminderLocations;
         }
     }
 
@@ -56,7 +62,7 @@ public class Reminder implements Data{
         return content;
     }
 
-    public List<Location> getLocations() {
-        return locations;
+    public List<ReminderLocation> getReminderLocations() {
+        return reminderLocations;
     }
 }
