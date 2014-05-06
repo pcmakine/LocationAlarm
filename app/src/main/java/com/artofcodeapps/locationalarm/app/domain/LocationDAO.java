@@ -51,6 +51,7 @@ public class LocationDAO implements Dao {
         ContentValues vals = new ContentValues();
         vals.put(DbContract.LocationEntry.COLUMN_NAME_LAT, loc.getLatLng().latitude);
         vals.put(DbContract.LocationEntry.COLUMN_NAME_LONG, loc.getLatLng().longitude);
+        vals.put(DbContract.LocationEntry.COLUMN_NAME_REMINDER_ID, loc.getReminderID());
         return vals;
     }
 
@@ -75,8 +76,11 @@ public class LocationDAO implements Dao {
 
     public static ReminderLocation createOneEntry(Cursor c){
         long id = c.getLong(c.getColumnIndexOrThrow(DbContract.LocationEntry._ID));
+        int index = c.getColumnIndexOrThrow(DbContract.LocationEntry.COLUMN_NAME_REMINDER_ID);
+        long reminderID = c.getLong(index);
         ReminderLocation loc = new ReminderLocation(getLatLng(c));
         loc.setId(id);
+        loc.setReminderID(reminderID);
         return loc;
     }
 

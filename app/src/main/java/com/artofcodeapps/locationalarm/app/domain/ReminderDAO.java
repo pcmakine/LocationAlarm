@@ -14,16 +14,16 @@ import java.util.List;
  * Created by Pete on 9.4.2014.
  */
 public class ReminderDAO implements Dao, Serializable {
-    private List<Reminder> reminders;
+  //  private List<Reminder> reminders;
     private static Database db;
 
     //todo move the db.getreadabledatabase call to asynctask
     public ReminderDAO(Database database){
         db = database;
-        reminders = fetchAllFromDatabase();
+       // reminders = fetchAllFromDatabase();
     }
     public boolean noReminders(){
-        return reminders == null || reminders.size()== 0;
+        return fetchAllFromDatabase().isEmpty();
     }
 
 
@@ -32,10 +32,12 @@ public class ReminderDAO implements Dao, Serializable {
         return list;
     }
 
-    private static List getReminderLocations(long reminderID){
-        String sql = "SELECT locations._id, locations.lat, locations.long FROM locations, links, reminders where locations._id = links.location_id AND " + reminderID + " = links.reminder_id";
-        List locList = db.executeRaw(sql, LocationDAO.class);
-        return locList;
+    private static ReminderLocation getReminderLocation(long reminderID){
+        String sql = "SELECT * FROM locations WHERE locations.reminderID = " +
+                reminderID;
+      //  String sql = "SELECT locations._id, locations.lat, locations.long FROM locations, links, reminders where locations._id = links.location_id AND " + reminderID + " = links.reminder_id";
+        ReminderLocation location = (ReminderLocation) db.executeRaw(sql, LocationDAO.class);
+        return location;
     }
 
     @Override
@@ -57,7 +59,7 @@ public class ReminderDAO implements Dao, Serializable {
 
     @Override
     public List getAll() {
-        return reminders;
+        return fetchAllFromDatabase();
     }
 
     @Override
@@ -69,7 +71,7 @@ public class ReminderDAO implements Dao, Serializable {
         ContentValues vals = values(reminder);
         long id = db.insert(vals, DbContract.ReminderEntry.TABLE_NAME);
         reminder.setId(id);
-        reminders.add(reminder);
+        //reminders.add(reminder);
         return id;
     }
 
@@ -94,18 +96,19 @@ public class ReminderDAO implements Dao, Serializable {
     public static Reminder createOneEntry(Cursor c){
         long id = c.getLong(c.getColumnIndexOrThrow(DbContract.ReminderEntry._ID));
         String content = c.getString(c.getColumnIndexOrThrow(DbContract.ReminderEntry.COLUMN_NAME_CONTENT));
-        Reminder r = new Reminder(id, content, getReminderLocations(id));
+        Reminder r = new Reminder(id, content);
+        r.setReminderLocation(getReminderLocation(id));
         return r;
     }
 
     //todo make this more efficient
-    public Reminder getReminderFromMemory(long id){
+/*    public Reminder getReminderFromMemory(long id){
         for(Reminder r: reminders){
             if(r.getId() == id){
                 return r;
             }
         }
         return null;
-    }
+    }*/
 
 }

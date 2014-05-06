@@ -29,8 +29,9 @@ public class DataManager {
 
         try{
             reminderID = reminders.insert(reminder);
+            reminderLocation.setReminderID(reminderID);
             locationID = locations.insert(reminderLocation);
-            insertReminderLocationLink(db, reminderID, locationID);
+           // insertReminderLocationLink(db, reminderID, locationID);
         }catch(SQLException e){
             return false;
         }

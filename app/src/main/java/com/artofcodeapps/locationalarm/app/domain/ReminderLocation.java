@@ -8,6 +8,7 @@ import com.google.android.gms.maps.model.LatLng;
 public class ReminderLocation implements Trigger{
     private LatLng location;
     private long id;
+    private long reminderID;  //reference to the associated reminder
     private int radiusInMeters;
     private static final int DEFAULT_RADIUS = 500;
 
@@ -15,7 +16,16 @@ public class ReminderLocation implements Trigger{
         this(location, DEFAULT_RADIUS);
     }
 
+    public long getReminderID() {
+        return reminderID;
+    }
+
+    public void setReminderID(long reminderID) {
+        this.reminderID = reminderID;
+    }
+
     public ReminderLocation(LatLng location, int radiusInMeters){
+
         this.location = location;
         this.radiusInMeters = radiusInMeters;
     }
@@ -36,6 +46,10 @@ public class ReminderLocation implements Trigger{
         this.id = id;
     }
 
+    public int getRadius(){
+        return radiusInMeters;
+    }
+
     @Override
     public boolean checkTriggerCondition() {
         return false;
@@ -45,5 +59,7 @@ public class ReminderLocation implements Trigger{
     public String toString(){
         return location.toString();
     }
+
+
 
 }

@@ -21,12 +21,10 @@ import java.util.List;
  * Created by Pete on 9.4.2014.
  */
 
-/*Todo figure out how to generalize the class, so that it would also work for other objects than just
-    the reminders */
 public class Database extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "locAlarmDB";
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 11;
 
     public Database(Context c) {
         super(c, DATABASE_NAME, null, DATABASE_VERSION);
@@ -36,7 +34,7 @@ public class Database extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(DbContract.SQL_CREATE_REMINDERS);
         db.execSQL(DbContract.SQL_CREATE_LOCATIONS);
-        db.execSQL(DbContract.SQL_CREATE_REMINDER_LOCATION_LINKS);
+        // db.execSQL(DbContract.SQL_CREATE_REMINDER_LOCATION_LINKS);
     }
 
     @Override
@@ -47,16 +45,16 @@ public class Database extends SQLiteOpenHelper {
         );
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.ReminderEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.LocationEntry.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + DbContract.ReminderLocationLinkEntry.TABLE_NAME);
+      //  db.execSQL("DROP TABLE IF EXISTS " + DbContract.ReminderLocationLinkEntry.TABLE_NAME);
         onCreate(db);
     }
 
     @Override
     public void onOpen(SQLiteDatabase db){
-        super.onOpen(db);
         if(!db.isReadOnly()){
             db.execSQL("PRAGMA foreign_keys = ON;");
         }
+        super.onOpen(db);
     }
 
     /**
@@ -76,7 +74,17 @@ public class Database extends SQLiteOpenHelper {
         return newRowId;
     }
 
+    public int totalRows(String tablename){
+        String countQuery = "SELECT  * FROM " + tablename;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(countQuery, null);
+        int cnt = cursor.getCount();
+        cursor.close();
+        return cnt;
+    }
+
     public List getAll(String tableName, String sortOrder, Class c) {
+
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.query(
@@ -108,22 +116,27 @@ public class Database extends SQLiteOpenHelper {
     }
 
 
-    public List executeRaw(String query, Class c) {
+    public Object executeRaw(String query, Class c) {
+
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.rawQuery(
                 query, null);
-
-        return entriesAsList(cursor, c);
+        int count = cursor.getCount();
+        return entriesAsList(cursor, c).get(0);
     }
 
 
     private List entriesAsList(Cursor cursor, Class c) {
         ArrayList list = new ArrayList();
+        String cursorContent= "";
         if (cursor != null && cursor.moveToFirst()) {
             do {
+            //    cursorContent = "ReminderId = " + cursorContent + cursor.
                 Object data = makeOneEntry(cursor, c);
-                list.add(data);
+                if(data != null){
+                    list.add(data);
+                }
             } while (cursor.moveToNext());
         }
         return list;
@@ -195,8 +208,8 @@ public class Database extends SQLiteOpenHelper {
             String tblName = c.getString(0);
             Cursor table = db.rawQuery("SELECT * FROM " + tblName,null);
             table.moveToFirst();
-                Log.e("table", tblName);
-                logColumnNames(table.getColumnNames());
+            Log.e("table", tblName);
+            logColumnNames(table.getColumnNames());
             c.moveToNext();
         }
     }

@@ -35,9 +35,9 @@ public class EditActivity extends ActionBarActivity {
         reminderToEdit = (Reminder) reminders.getOne(id);
         content = (EditText) findViewById(R.id.content);
         TextView locationText = (TextView) findViewById(R.id.locationText);
-        List<ReminderLocation> locs = reminderToEdit.getReminderLocations();
-        if(!locs.isEmpty()){
-            locationText.setText(locs.get(0).toString());
+        ReminderLocation loc = reminderToEdit.getLocation();
+        if(loc != null){
+            locationText.setText(loc.toString());
         }
 
         if(reminderToEdit == null){

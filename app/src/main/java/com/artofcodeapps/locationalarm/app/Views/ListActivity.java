@@ -52,6 +52,12 @@ public class ListActivity extends ActionBarActivity {
             setButtonListener(btn, reminderList.get(i));
             listHolder.addView(row);
         }
+     //  Row row = new Row(this, new float[]{15, 1});
+    //    TextView tw = row.insertText(String.valueOf("There are " + new Database(this).totalRows("locations")) + "locations in db", LinearLayout.LayoutParams.WRAP_CONTENT, 0);
+      //  setOnTouchListener(reminderList.get(i), tw);
+//        ImageButton btn = row.insertImageButton(R.drawable.ic_action_discard, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+        //setButtonListener(btn, reminderList.get(i));
+    //    listHolder.addView(row);
     }
 
     private void setButtonListener(ImageButton btn, final Reminder r){
@@ -64,7 +70,7 @@ public class ListActivity extends ActionBarActivity {
                    Toast.makeText(getApplicationContext(), R.string.reminder_not_removed, Toast.LENGTH_LONG).show();
                }
 
-                onBackPressed();
+              //  onBackPressed();
             }
         });
     }

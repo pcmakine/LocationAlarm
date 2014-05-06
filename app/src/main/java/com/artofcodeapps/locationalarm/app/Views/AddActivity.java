@@ -1,5 +1,6 @@
 package com.artofcodeapps.locationalarm.app.Views;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -17,6 +18,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 public class AddActivity extends ActionBarActivity {
     private LatLng location;
+    private String reminderText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +41,8 @@ public class AddActivity extends ActionBarActivity {
         String content  = getEditTextContent(R.id.contentToSave);
         Reminder r = new Reminder(content);
         boolean remdinerInsertSuccess = reminders.insert(r);*/
-        String content  = getEditTextContent(R.id.contentToSave);
-        Reminder r = new Reminder(content);
+        reminderText  = getEditTextContent(R.id.contentToSave);
+        Reminder r = new Reminder(reminderText);
 
         if(DataManager.saveReminder(r, new ReminderLocation(location), this)){
             Toast toast = Toast.makeText(this, R.string.successfully_added, Toast.LENGTH_LONG);
@@ -50,6 +52,15 @@ public class AddActivity extends ActionBarActivity {
             Toast toast = Toast.makeText(this, R.string.reminder_not_added, Toast.LENGTH_LONG);
             toast.show();
         }
+    }
+
+    @Override
+    public void onBackPressed(){
+        Bundle bundle = new Bundle();
+        bundle.putString("reminderText", reminderText);
+        Intent intent = new Intent();
+        intent.putExtras(bundle);
+        super.onBackPressed();
     }
 
 
