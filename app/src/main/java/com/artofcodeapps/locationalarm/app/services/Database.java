@@ -24,7 +24,7 @@ import java.util.List;
 public class Database extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "locAlarmDB";
-    private static final int DATABASE_VERSION = 11;
+    private static final int DATABASE_VERSION = 12;
 
     public Database(Context c) {
         super(c, DATABASE_NAME, null, DATABASE_VERSION);

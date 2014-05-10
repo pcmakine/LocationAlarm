@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.*;
 
@@ -20,6 +19,7 @@ import java.util.List;
 
 public class ListActivity extends ActionBarActivity {
     private ReminderDAO reminders;
+    private LinearLayout listHolder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,12 +28,12 @@ public class ListActivity extends ActionBarActivity {
     }
 
     public void buildDynamicViews(){
-        LinearLayout contentHolder = (LinearLayout) findViewById(R.id.reminderHolder);
-        contentHolder.removeAllViews();
+        listHolder = (LinearLayout) findViewById(R.id.reminderHolder);
+        listHolder.removeAllViews();
         if(reminders.noReminders()){
-            showNoRemindersText(contentHolder);
+            showNoRemindersText(listHolder);
         }else{
-            listReminders(contentHolder);
+            listReminders(listHolder);
         }
     }
 
@@ -49,7 +49,7 @@ public class ListActivity extends ActionBarActivity {
             TextView tw = row.insertText(reminderList.get(i).getContent(), LinearLayout.LayoutParams.WRAP_CONTENT, 0);
             setOnTouchListener(reminderList.get(i), tw);
             ImageButton btn = row.insertImageButton(R.drawable.ic_action_discard, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
-            setButtonListener(btn, reminderList.get(i));
+            setButtonListener(btn, reminderList.get(i), row);
             listHolder.addView(row);
         }
      //  Row row = new Row(this, new float[]{15, 1});
@@ -60,15 +60,17 @@ public class ListActivity extends ActionBarActivity {
     //    listHolder.addView(row);
     }
 
-    private void setButtonListener(ImageButton btn, final Reminder r){
+    private void setButtonListener(final ImageButton btn, final Reminder r, final Row row){
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                if(reminders.remove(r)){
                    Toast.makeText(getApplicationContext(), R.string.successfully_removed, Toast.LENGTH_LONG).show();
+                   listHolder.removeView(row);
                }else{
                    Toast.makeText(getApplicationContext(), R.string.reminder_not_removed, Toast.LENGTH_LONG).show();
                }
+
 
               //  onBackPressed();
             }
@@ -79,7 +81,7 @@ public class ListActivity extends ActionBarActivity {
         tw.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startEditActivity(r);
+                startEdit(r);
             }
         });
     }
@@ -104,14 +106,14 @@ public class ListActivity extends ActionBarActivity {
         return btn;
     }
 
-    public void startEditActivity(Reminder r){
-        Intent intent = new Intent(this, EditActivity.class);
+    public void startEdit(Reminder r){
+        Intent intent = new Intent(this, EditAddActivity.class);
         intent.putExtra("reminderID", r.getId());
         startActivity(intent);
     }
 
     public void startAddActivity(View view){
-        Intent i = new Intent(this, AddActivity.class);
+        Intent i = new Intent(this, EditAddActivity.class);
         this.startActivity(i);
     }
 

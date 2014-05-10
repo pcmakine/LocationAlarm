@@ -48,7 +48,7 @@ public class MenuActivity extends ActionBarActivity {
     }
 
     public void startAddActivity(View view){
-        Intent i = new Intent(this, AddActivity.class);
+        Intent i = new Intent(this, EditAddActivity.class);
         this.startActivity(i);
     }
 

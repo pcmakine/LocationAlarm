@@ -40,7 +40,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.artofcodeapps.locationalarm.app.Views.AddActivity"
+            android:name=".Views.EditAddActivity"
             android:windowSoftInputMode="adjustResize" >
             android:label="@string/title_activity_add" >
         </activity>

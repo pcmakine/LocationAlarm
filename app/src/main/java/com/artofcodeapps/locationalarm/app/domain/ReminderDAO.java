@@ -78,6 +78,9 @@ public class ReminderDAO implements Dao, Serializable {
     public ContentValues values(Reminder reminder){
         ContentValues vals = new ContentValues();
         vals.put(DbContract.ReminderEntry.COLUMN_NAME_CONTENT, reminder.getContent());
+        int isOn = 0;
+        isOn = reminder.isOn() ? isOn: 1;
+        vals.put(DbContract.ReminderEntry.COLUMN_NAME_ON, isOn);
         return vals;
     }
 
@@ -96,7 +99,8 @@ public class ReminderDAO implements Dao, Serializable {
     public static Reminder createOneEntry(Cursor c){
         long id = c.getLong(c.getColumnIndexOrThrow(DbContract.ReminderEntry._ID));
         String content = c.getString(c.getColumnIndexOrThrow(DbContract.ReminderEntry.COLUMN_NAME_CONTENT));
-        Reminder r = new Reminder(id, content);
+        boolean on = c.getInt(c.getColumnIndexOrThrow(DbContract.ReminderEntry.COLUMN_NAME_ON)) == 1;
+        Reminder r = new Reminder(id, content, on);
         r.setReminderLocation(getReminderLocation(id));
         return r;
     }

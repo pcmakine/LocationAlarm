@@ -11,14 +11,16 @@ public class Reminder implements Data{
     private String content;
     private Alarm alarm;
     private ReminderLocation reminderLocation;
+    private boolean on;
 
     public Reminder(String content) {
         this.content = content;
     }
 
-    public Reminder(long id, String content){
+    public Reminder(long id, String content, boolean on){
         this.id = id;
         this.content = content;
+        this.on = on;
     }
 
     public long getId() {
@@ -51,6 +53,18 @@ public class Reminder implements Data{
 
     public boolean hasContent(){
         return content != null && !content.trim().equals(new String(""));
+    }
+
+    public boolean isOn(){
+        return on;
+    }
+
+    public void turnOn(){
+        this.on = true;
+    }
+
+    public void turnOff(){
+        this.on = false;
     }
 
     @Override

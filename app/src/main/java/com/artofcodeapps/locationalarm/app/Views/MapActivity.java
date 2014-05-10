@@ -30,7 +30,7 @@ import java.util.*;
 
 public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLongClickListener,
         GoogleMap.OnMapClickListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnInfoWindowClickListener,
-    GoogleMap.OnMarkerDragListener, View.OnDragListener{
+        GoogleMap.OnMarkerDragListener, View.OnDragListener{
     private static final float SELECTED_COLOR = BitmapDescriptorFactory.HUE_AZURE;
     private static final float MARKER_WITH_REMINDER_COLOR = BitmapDescriptorFactory.HUE_ORANGE;
     private static final float EMPTY_MARKER_COLOR = BitmapDescriptorFactory.HUE_RED;
@@ -38,7 +38,8 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
     private HashMap<Marker, Reminder> markerReminderMap;
     private Marker selectedMarker;
     private ReminderDAO reminders;
-    private Circle myCircle;
+    private Circle activeRadius;
+    private boolean markerDragRestarted;
 
     // Google Map
     private GoogleMap googleMap;
@@ -92,30 +93,34 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
             }
         }
     }
-    public void populateMapWithReminders(){
+    public void populateMapWithMarkers(){
         reminders = new ReminderDAO(new Database(this));
         List<Reminder> reminderList = reminders.getAll();
         for (Reminder reminder: reminderList){
-            showReminderLocationsOnMap(reminder);
+            placeMarker(reminder, reminder.getContent(), reminder.getLocation().getLatLng(), MARKER_WITH_REMINDER_COLOR);
         }
     }
 
-    private void showReminderLocationsOnMap(Reminder r){
-        ReminderLocation loc = r.getLocation();
 
-            Marker m = (googleMap.addMarker(new MarkerOptions()
-                    .position(loc.getLatLng())
-                    .title(StringUtils.abbreviate(r.getContent(), 20))
-                    .icon(BitmapDescriptorFactory.defaultMarker(MARKER_WITH_REMINDER_COLOR))
-                    .draggable(true)));
-            markerReminderMap.put(m, r);
+    private Marker placeMarker(Reminder r, String text, LatLng loc, float color){
+        Marker m = (googleMap.addMarker(new MarkerOptions()
+                .position(loc)
+                .title(StringUtils.abbreviate(text, 20))
+                .icon(BitmapDescriptorFactory.defaultMarker(color))
+                .draggable(true)));
+        //  showRadius(loc);
+        markerReminderMap.put(m, r);
+        return m;
+    }
+
+    private void showRadius(ReminderLocation loc){
         CircleOptions circleOptions = new CircleOptions()
                 .center(loc.getLatLng())   //set center
                 .radius(loc.getRadius())   //set radius in meters
                 .fillColor(Color.argb(50, 20, 134, 255))  //default
                 .strokeColor(Color.BLUE)
                 .strokeWidth(5);
-        myCircle = googleMap.addCircle(circleOptions);
+        activeRadius = googleMap.addCircle(circleOptions);
     }
 
     private void animateToLocation(Location loc){
@@ -157,8 +162,8 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
     public void setMarker(Marker marker){
         this.selectedMarker = marker;
         markerReminderMap.put(selectedMarker, null);
-
     }
+
     //todo show the search field. If the search button is not pressed do not show it at all
     public void showSearch(){
 
@@ -168,7 +173,7 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
         if(selectedMarker == null){
             Toast.makeText(this, "No location chosen!", Toast.LENGTH_SHORT);
         }else{
-            Intent intent = new Intent(this, AddActivity.class);
+            Intent intent = new Intent(this, EditAddActivity.class);
             intent.putExtra("location", selectedMarker.getPosition());
             this.startActivity(intent);
         }
@@ -183,72 +188,86 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
                 marker.setIcon(BitmapDescriptorFactory.defaultMarker(MARKER_WITH_REMINDER_COLOR));
             }
         }
+        removeRadiusFromMap();
     }
 
-    public void startEditActivity(Reminder r){
-        Intent intent = new Intent(this, EditActivity.class);
+    private void removeRadiusFromMap(){
+        if(activeRadius != null){
+            activeRadius.remove();
+        }
+    }
+
+    public void startEdit(Reminder r){
+        Intent intent = new Intent(this, EditAddActivity.class);
         intent.putExtra("reminderID", r.getId());
         startActivity(intent);
     }
 
-    @Override
-    public boolean onMarkerClick(Marker marker) {
+    private void showClickedMarkerAsSelected(Marker marker){
         selectedMarker = marker;
         showNoMarkerAsSelected();
-        Reminder reminder = markerReminderMap.get(marker);
         marker.setIcon(BitmapDescriptorFactory.defaultMarker(SELECTED_COLOR));
-        if(reminder != null && reminder.getLocation() != null){
-            ReminderLocation loc = reminder.getLocation();
-            marker.setTitle(StringUtils.abbreviate(reminder.getContent(), 20));
-            marker.showInfoWindow();
-
+        if(markerReminderMap.get(marker) != null && markerReminderMap.get(marker).getLocation() != null){
+            showMarkerInfoWindow(marker);
+            showRadius(markerReminderMap.get(marker).getLocation());
         }
-
         supportInvalidateOptionsMenu();
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        showClickedMarkerAsSelected(marker);
         // marker.remove();
         return true;
+    }
+
+    private void showMarkerInfoWindow(Marker marker){
+        Reminder reminder = markerReminderMap.get(marker);
+        if(reminder != null && reminder.getLocation() != null){
+            marker.setTitle(StringUtils.abbreviate(reminder.getContent(), 20));
+            marker.showInfoWindow();
+        }
     }
 
     @Override
     public void onMapLongClick(LatLng point) {
         showNoMarkerAsSelected();
-        this.selectedMarker = (googleMap.addMarker(new MarkerOptions()
-                .position(point)
-                .title("No reminder associated with this location")
-                .icon(BitmapDescriptorFactory.defaultMarker(SELECTED_COLOR))
-                .draggable(true)));
-        markerReminderMap.put(selectedMarker, null);
+        this.selectedMarker = placeMarker(null, "No reminder", point, SELECTED_COLOR);
         supportInvalidateOptionsMenu();
     }
 
     private void confirmRemove(){
-        if(markerReminderMap.get(selectedMarker) == null){
-            markerReminderMap.remove(selectedMarker); //todo what happens if the program stops here, before the next command
-            selectedMarker.remove();
-            selectedMarker = null;
-            supportInvalidateOptionsMenu();
-        }else{
-            new AlertDialog.Builder(this)
-                    .setMessage("Are you sure you want to delete this reminder?")
-                    .setCancelable(true)
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                            removeSelectedMarker();
-                        }
-                    })
-                    .setNegativeButton("No", null)
-                    .show();
+        if(selectedMarker != null){
+            if(markerReminderMap.get(selectedMarker) == null){
+                removeSelectedMarker();
+                supportInvalidateOptionsMenu();
+            }else{
+                showConfirmationPopUp();
+            }
         }
     }
 
+    private void showConfirmationPopUp(){
+        new AlertDialog.Builder(this)
+                .setMessage("Are you sure you want to delete this reminder?")
+                .setCancelable(true)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        reminders.remove(markerReminderMap.get(selectedMarker));
+                        removeSelectedMarker();
+                    }
+                })
+                .setNegativeButton("No", null)
+                .show();
+    }
+
     private void removeSelectedMarker(){
-        reminders.remove(markerReminderMap.get(selectedMarker));
         markerReminderMap.remove(selectedMarker); //todo what happens if the program stops here, before the next command
         selectedMarker.remove();
         selectedMarker = null;
-
+        removeRadiusFromMap();
         supportInvalidateOptionsMenu();
     }
 
@@ -256,7 +275,7 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
     protected void onResume() {
         this.markerReminderMap = new HashMap();
         initializeMap();
-        populateMapWithReminders();
+        populateMapWithMarkers();
         this.selectedMarker = null;
         super.onResume();
     }
@@ -312,15 +331,15 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
 
     @Override
     public void onInfoWindowClick(Marker marker) {
-       Reminder reminder = markerReminderMap.get(marker);
+        Reminder reminder = markerReminderMap.get(marker);
         if(reminder != null){
-            startEditActivity(reminder);
+            startEdit(reminder);
         }
     }
 
     @Override
     public void onMarkerDragStart(Marker marker) {
-
+        removeRadiusFromMap();
     }
 
     @Override
@@ -336,8 +355,9 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
             loc.setLocation(marker.getPosition());
             LocationDAO locations = new LocationDAO(new Database (this));
             locations.update(loc);
+            showRadius(loc);
+            showClickedMarkerAsSelected(marker);
         }
-
     }
 
     @Override

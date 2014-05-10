@@ -8,8 +8,9 @@ import android.provider.BaseColumns;
 public class DbContract {
     public static final String SQL_CREATE_REMINDERS =
             "CREATE TABLE " + ReminderEntry.TABLE_NAME + " (" +
-                    ReminderEntry._ID + " INTEGER PRIMARY KEY autoincrement," +
-                    ReminderEntry.COLUMN_NAME_CONTENT + " TEXT)";
+                    ReminderEntry._ID + " INTEGER PRIMARY KEY autoincrement, " +
+                    ReminderEntry.COLUMN_NAME_CONTENT + " TEXT, " +
+                    ReminderEntry.COLUMN_NAME_ON + " INTEGER DEFAULT 0)";
 /*                    FKEY + "(" + ReminderEntry._ID + ")" + REFS + ReminderLocationLinkEntry.TABLE_NAME + "(" +
                     ReminderLocationLinkEntry.COLUMN_NAME_REMINDERID +"))";*/
 
@@ -44,6 +45,7 @@ public class DbContract {
     public static abstract class ReminderEntry implements BaseColumns {
         public static final String TABLE_NAME = "reminders";
         public static final String COLUMN_NAME_CONTENT = "content";
+        public static final String COLUMN_NAME_ON = "Alarm_On"; //tells whether the reminder is on or not. todo make the alarm table and move this there
     }
 
     public static abstract class LocationEntry implements BaseColumns {
