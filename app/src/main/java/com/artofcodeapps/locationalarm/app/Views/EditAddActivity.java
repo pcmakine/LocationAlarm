@@ -1,6 +1,10 @@
 package com.artofcodeapps.locationalarm.app.Views;
 
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.location.LocationManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -18,7 +22,12 @@ import com.artofcodeapps.locationalarm.app.domain.ReminderLocation;
 import com.artofcodeapps.locationalarm.app.domain.Reminder;
 import com.artofcodeapps.locationalarm.app.services.DataManager;
 import com.artofcodeapps.locationalarm.app.services.Database;
+import com.artofcodeapps.locationalarm.app.services.MyLocationListener;
+import com.artofcodeapps.locationalarm.app.services.ProximityIntentReceiver;
 import com.google.android.gms.maps.model.LatLng;
+
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 public class EditAddActivity extends ActionBarActivity {
     private LatLng location;
@@ -28,12 +37,26 @@ public class EditAddActivity extends ActionBarActivity {
     private TextView locationText;
     private Reminder reminder;
     private boolean editMode;
+    private LocationManager manager;
 
+    private static final long MINIMUM_DISTANCECHANGE_FOR_UPDATE = 1; // in Meters
+    private static final long MINIMUM_TIME_BETWEEN_UPDATE = 10000; // in Milliseconds
+    private static final long PROX_ALERT_EXPIRATION = 1000*60*60*24*2; //in milliseconds two days
+    private static final String PROX_ALERT_INTENT = "com.artofcodeapps.locationalarm.app.Views.MenuActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add);
+
+        manager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+/*        manager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                MINIMUM_TIME_BETWEEN_UPDATE,
+                MINIMUM_DISTANCECHANGE_FOR_UPDATE,
+                new MyLocationListener()
+        );*/
+
+
         locationText = (TextView) findViewById(R.id.location);
         contentToSaveTW = (TextView) findViewById(R.id.contentToSave);
         mySwitch = (Switch) findViewById(R.id.myswitch);
@@ -57,10 +80,20 @@ public class EditAddActivity extends ActionBarActivity {
                                          boolean isChecked) {
                 if(isChecked){
                     reminder.turnOn();
+                  //  addProximityAlert();
+                }else{
+                    reminder.turnOff();
+                   // removeProximityAlert();
                 }
 
             }
         });
+    }
+
+    private void removeProximityAlert(){
+        Intent proximityIntent = new Intent(PROX_ALERT_INTENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), 0, proximityIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
+        manager.removeProximityAlert(pendingIntent);
     }
 
     private void makeNewReminder(){
@@ -100,6 +133,11 @@ public class EditAddActivity extends ActionBarActivity {
     private void updateReminder(){
         ReminderDAO rdao = new ReminderDAO(new Database(this));
         if(rdao.update(reminder)){
+            if(mySwitch.isChecked()){
+                addProximityAlert();
+            }else{
+                removeProximityAlert();
+            }
             Toast toast = Toast.makeText(this, R.string.successfully_edited, Toast.LENGTH_LONG);
             toast.show();
             onBackPressed();
@@ -111,6 +149,7 @@ public class EditAddActivity extends ActionBarActivity {
 
     private void addReminder(){
         if(DataManager.saveReminder(reminder, new ReminderLocation(location), this)){
+                addProximityAlert();
             Toast toast = Toast.makeText(this, R.string.successfully_added, Toast.LENGTH_LONG);
             toast.show();
             onBackPressed();
@@ -120,10 +159,27 @@ public class EditAddActivity extends ActionBarActivity {
         }
     }
 
+    private void addProximityAlert(){
+        if(reminder.getLocation() != null){
+        Intent intent = new Intent(PROX_ALERT_INTENT);
+        intent.putExtra("reminderID", reminder.getId());
+        PendingIntent proximityIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        manager.addProximityAlert(reminder.getLocation().getLatLng().latitude,
+                reminder.getLocation().getLatLng().longitude,
+                reminder.getLocation().getRadius(),
+                PROX_ALERT_EXPIRATION,
+                proximityIntent);
+        IntentFilter filter = new IntentFilter(PROX_ALERT_INTENT);
+        registerReceiver(new ProximityIntentReceiver(), filter);
+        }
+    }
+
     @Override
     public void onBackPressed(){
         Bundle bundle = new Bundle();
         bundle.putString("reminderText", reminderText);
+        bundle.putLong("reminderID", reminder.getId());
+     //   bundle.putBoolean("newReminder", !editMode);
         Intent intent = new Intent();
         intent.putExtras(bundle);
         super.onBackPressed();
@@ -153,7 +209,5 @@ public class EditAddActivity extends ActionBarActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
-
 
 }

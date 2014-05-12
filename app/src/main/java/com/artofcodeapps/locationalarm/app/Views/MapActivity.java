@@ -1,23 +1,20 @@
 package com.artofcodeapps.locationalarm.app.Views;
 
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.artofcodeapps.locationalarm.app.R;
 import com.artofcodeapps.locationalarm.app.domain.*;
@@ -30,16 +27,10 @@ import java.util.*;
 
 public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLongClickListener,
         GoogleMap.OnMapClickListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnInfoWindowClickListener,
-        GoogleMap.OnMarkerDragListener, View.OnDragListener{
-    private static final float SELECTED_COLOR = BitmapDescriptorFactory.HUE_AZURE;
-    private static final float MARKER_WITH_REMINDER_COLOR = BitmapDescriptorFactory.HUE_ORANGE;
-    private static final float EMPTY_MARKER_COLOR = BitmapDescriptorFactory.HUE_RED;
-    private LocationManager manager;
-    private HashMap<Marker, Reminder> markerReminderMap;
-    private Marker selectedMarker;
-    private ReminderDAO reminders;
-    private Circle activeRadius;
-    private boolean markerDragRestarted;
+        GoogleMap.OnMarkerDragListener{
+    private LocationManager locationManager;
+    private MarkerManager markerManager;
+    public static Context appCtx;
 
     // Google Map
     private GoogleMap googleMap;
@@ -48,8 +39,9 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+        appCtx = getApplicationContext();
 
-        manager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         Button findLocationBtn = (Button) findViewById(R.id.findLocationBtn);
         findLocationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,35 +85,6 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
             }
         }
     }
-    public void populateMapWithMarkers(){
-        reminders = new ReminderDAO(new Database(this));
-        List<Reminder> reminderList = reminders.getAll();
-        for (Reminder reminder: reminderList){
-            placeMarker(reminder, reminder.getContent(), reminder.getLocation().getLatLng(), MARKER_WITH_REMINDER_COLOR);
-        }
-    }
-
-
-    private Marker placeMarker(Reminder r, String text, LatLng loc, float color){
-        Marker m = (googleMap.addMarker(new MarkerOptions()
-                .position(loc)
-                .title(StringUtils.abbreviate(text, 20))
-                .icon(BitmapDescriptorFactory.defaultMarker(color))
-                .draggable(true)));
-        //  showRadius(loc);
-        markerReminderMap.put(m, r);
-        return m;
-    }
-
-    private void showRadius(ReminderLocation loc){
-        CircleOptions circleOptions = new CircleOptions()
-                .center(loc.getLatLng())   //set center
-                .radius(loc.getRadius())   //set radius in meters
-                .fillColor(Color.argb(50, 20, 134, 255))  //default
-                .strokeColor(Color.BLUE)
-                .strokeWidth(5);
-        activeRadius = googleMap.addCircle(circleOptions);
-    }
 
     private void animateToLocation(Location loc){
         CameraPosition pos = new CameraPosition.Builder().target(new LatLng(loc.getLatitude(), loc.getLongitude())).zoom(15).build();
@@ -130,15 +93,15 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
 
     private Location getLocation(){
         int minTime = 0;
-        List<String> matchingProviders = manager.getAllProviders();
+        List<String> matchingProviders = locationManager.getAllProviders();
         String prov = matchingProviders.get(0);
-        Location loc = manager.getLastKnownLocation(prov);
+        Location loc = locationManager.getLastKnownLocation(prov);
         float bestAccuracy = loc.getAccuracy();
         Location bestResult = loc;
         long bestTime = loc.getTime();
 
         for (String provider: matchingProviders) {
-            Location location = manager.getLastKnownLocation(provider);
+            Location location = locationManager.getLastKnownLocation(provider);
 
             if (location != null) {
                 float accuracy = location.getAccuracy();
@@ -160,8 +123,8 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
     }
 
     public void setMarker(Marker marker){
-        this.selectedMarker = marker;
-        markerReminderMap.put(selectedMarker, null);
+        markerManager.saveMarker(marker, null);
+        markerManager.selectMarker(marker);
     }
 
     //todo show the search field. If the search button is not pressed do not show it at all
@@ -170,30 +133,12 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
     }
 
     public void startAddActivity(){
-        if(selectedMarker == null){
+        if(!markerManager.userHasSelectedMarker()){
             Toast.makeText(this, "No location chosen!", Toast.LENGTH_SHORT);
         }else{
             Intent intent = new Intent(this, EditAddActivity.class);
-            intent.putExtra("location", selectedMarker.getPosition());
+            intent.putExtra("location", markerManager.getSelectedMarker().getPosition());
             this.startActivity(intent);
-        }
-    }
-
-    public void showNoMarkerAsSelected(){
-        Set<Marker> markersOnMap = markerReminderMap.keySet();
-        for(Marker marker: markersOnMap){
-            if(markerReminderMap.get(marker) == null){
-                marker.setIcon(BitmapDescriptorFactory.defaultMarker(EMPTY_MARKER_COLOR));
-            }else{
-                marker.setIcon(BitmapDescriptorFactory.defaultMarker(MARKER_WITH_REMINDER_COLOR));
-            }
-        }
-        removeRadiusFromMap();
-    }
-
-    private void removeRadiusFromMap(){
-        if(activeRadius != null){
-            activeRadius.remove();
         }
     }
 
@@ -203,43 +148,9 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
         startActivity(intent);
     }
 
-    private void showClickedMarkerAsSelected(Marker marker){
-        selectedMarker = marker;
-        showNoMarkerAsSelected();
-        marker.setIcon(BitmapDescriptorFactory.defaultMarker(SELECTED_COLOR));
-        if(markerReminderMap.get(marker) != null && markerReminderMap.get(marker).getLocation() != null){
-            showMarkerInfoWindow(marker);
-            showRadius(markerReminderMap.get(marker).getLocation());
-        }
-        supportInvalidateOptionsMenu();
-    }
-
-    @Override
-    public boolean onMarkerClick(Marker marker) {
-        showClickedMarkerAsSelected(marker);
-        // marker.remove();
-        return true;
-    }
-
-    private void showMarkerInfoWindow(Marker marker){
-        Reminder reminder = markerReminderMap.get(marker);
-        if(reminder != null && reminder.getLocation() != null){
-            marker.setTitle(StringUtils.abbreviate(reminder.getContent(), 20));
-            marker.showInfoWindow();
-        }
-    }
-
-    @Override
-    public void onMapLongClick(LatLng point) {
-        showNoMarkerAsSelected();
-        this.selectedMarker = placeMarker(null, "No reminder", point, SELECTED_COLOR);
-        supportInvalidateOptionsMenu();
-    }
-
     private void confirmRemove(){
-        if(selectedMarker != null){
-            if(markerReminderMap.get(selectedMarker) == null){
-                removeSelectedMarker();
+        if(markerManager.userHasSelectedMarker()){
+            if(markerManager.removeSelectedIfEmpty()){
                 supportInvalidateOptionsMenu();
             }else{
                 showConfirmationPopUp();
@@ -248,6 +159,7 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
     }
 
     private void showConfirmationPopUp(){
+        final ReminderDAO reminders = new ReminderDAO(new Database(this));
         new AlertDialog.Builder(this)
                 .setMessage("Are you sure you want to delete this reminder?")
                 .setCancelable(true)
@@ -255,28 +167,27 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
-                        reminders.remove(markerReminderMap.get(selectedMarker));
-                        removeSelectedMarker();
+                        reminders.remove(markerManager.getReminder(markerManager.getSelectedMarker()));
+                        removeProximityAlert();
+
+                        markerManager.removeSelectedMarker();
+                        supportInvalidateOptionsMenu();
                     }
                 })
                 .setNegativeButton("No", null)
                 .show();
     }
 
-    private void removeSelectedMarker(){
-        markerReminderMap.remove(selectedMarker); //todo what happens if the program stops here, before the next command
-        selectedMarker.remove();
-        selectedMarker = null;
-        removeRadiusFromMap();
-        supportInvalidateOptionsMenu();
+    private void removeProximityAlert(){
+        Intent proximityIntent = new Intent("com.artofcodeapps.locationalarm.app.Views.MenuActivity");
+        PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), 0, proximityIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
+        locationManager.removeProximityAlert(pendingIntent);
     }
 
     @Override
     protected void onResume() {
-        this.markerReminderMap = new HashMap();
         initializeMap();
-        populateMapWithMarkers();
-        this.selectedMarker = null;
+        markerManager = new MarkerManager(googleMap, this);
         super.onResume();
     }
 
@@ -284,8 +195,10 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.map_activity_actions, menu);
-        if(selectedMarker == null || markerReminderMap.get(selectedMarker) != null){
-            MenuItem item = menu.findItem(R.id.action_add_alarm);
+        MenuItem item = menu.findItem(R.id.action_add_alarm);
+        if(markerManager.userHasSelectedEmptyMarker()){
+            item.setVisible(true);
+        }else{
             item.setVisible(false);
         }
         //       mOptionsMenu = menu;
@@ -295,10 +208,10 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
     @Override
     public boolean onPrepareOptionsMenu(Menu menu){
         MenuItem item = menu.findItem(R.id.action_add_alarm);
-        if(selectedMarker == null || markerReminderMap.get(selectedMarker) != null){
-            item.setVisible(false);
-        }else{
+        if(markerManager.userHasSelectedEmptyMarker()){
             item.setVisible(true);
+        }else{
+            item.setVisible(false);
         }
         return super.onPrepareOptionsMenu(menu);
     }
@@ -324,14 +237,28 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
     }
 
     @Override
+    public boolean onMarkerClick(Marker marker) {
+        markerManager.selectMarker(marker);
+        supportInvalidateOptionsMenu();
+        return true;
+    }
+
+    @Override
+    public void onMapLongClick(LatLng point) {
+        Marker marker = markerManager.generateMarker("No reminder", point, MarkerManager.getSelectedColor());
+        markerManager.saveMarker(marker, null);
+        markerManager.selectMarker(marker);
+        supportInvalidateOptionsMenu();
+    }
+
+    @Override
     public void onMapClick(LatLng latLng) {
-        showNoMarkerAsSelected();
-        this.selectedMarker = null;
+        markerManager.unSelectMarker();
     }
 
     @Override
     public void onInfoWindowClick(Marker marker) {
-        Reminder reminder = markerReminderMap.get(marker);
+        Reminder reminder = markerManager.getReminder(marker);
         if(reminder != null){
             startEdit(reminder);
         }
@@ -339,7 +266,7 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
 
     @Override
     public void onMarkerDragStart(Marker marker) {
-        removeRadiusFromMap();
+        markerManager.removeRadiusFromMap();
     }
 
     @Override
@@ -349,21 +276,14 @@ public class MapActivity extends ActionBarActivity implements GoogleMap.OnMapLon
 
     @Override
     public void onMarkerDragEnd(Marker marker) {
-        Reminder reminder = markerReminderMap.get(marker);
+        Reminder reminder = markerManager.getReminder(marker);
         if(reminder != null){
             ReminderLocation loc = reminder.getLocation();
             loc.setLocation(marker.getPosition());
             LocationDAO locations = new LocationDAO(new Database (this));
             locations.update(loc);
-            showRadius(loc);
-            showClickedMarkerAsSelected(marker);
+            markerManager.selectMarker(marker);
         }
-    }
-
-    @Override
-    public boolean onDrag(View v, DragEvent event) {
-
-        return false;
     }
 }
 

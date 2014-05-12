@@ -79,7 +79,7 @@ public class ReminderDAO implements Dao, Serializable {
         ContentValues vals = new ContentValues();
         vals.put(DbContract.ReminderEntry.COLUMN_NAME_CONTENT, reminder.getContent());
         int isOn = 0;
-        isOn = reminder.isOn() ? isOn: 1;
+        isOn = reminder.isOn() ? 1: 0;
         vals.put(DbContract.ReminderEntry.COLUMN_NAME_ON, isOn);
         return vals;
     }

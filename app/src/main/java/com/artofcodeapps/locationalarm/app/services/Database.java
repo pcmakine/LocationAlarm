@@ -96,7 +96,9 @@ public class Database extends SQLiteOpenHelper {
                 null,
                 sortOrder);
 
-        return entriesAsList(cursor, c);
+        List list = entriesAsList(cursor, c);
+        db.close();
+        return list;
     }
 
     public List get(String tableName, String selection, String[] selectionArgs, String sortOrder, Class c) {
@@ -112,7 +114,9 @@ public class Database extends SQLiteOpenHelper {
                 sortOrder,
                 null);
 
-        return entriesAsList(cursor, c);
+        List list = entriesAsList(cursor, c);
+        db.close();
+        return list;
     }
 
 
@@ -123,7 +127,9 @@ public class Database extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(
                 query, null);
         int count = cursor.getCount();
-        return entriesAsList(cursor, c).get(0);
+        List list = entriesAsList(cursor, c);
+        db.close();
+        return list.get(0);
     }
 
 
@@ -169,8 +175,10 @@ public class Database extends SQLiteOpenHelper {
 
     public int update(ContentValues vals, String tableName, String idRowName, String id) {
         SQLiteDatabase db = this.getWritableDatabase();
-        return db.update(tableName, vals, idRowName + " = ?",
+        int success =  db.update(tableName, vals, idRowName + " = ?",
                 new String[]{id});
+        db.close();
+        return success;
     }
 
     /**
@@ -190,6 +198,7 @@ public class Database extends SQLiteOpenHelper {
 
         cursor.moveToFirst();
         Object data = makeOneEntry(cursor, c);
+        db.close();
         return data;
     }
 
