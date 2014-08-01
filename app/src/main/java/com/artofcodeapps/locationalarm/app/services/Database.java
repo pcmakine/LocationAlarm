@@ -97,6 +97,7 @@ public class Database extends SQLiteOpenHelper {
                 sortOrder);
 
         List list = entriesAsList(cursor, c);
+        cursor.close();
         db.close();
         return list;
     }
@@ -115,6 +116,7 @@ public class Database extends SQLiteOpenHelper {
                 null);
 
         List list = entriesAsList(cursor, c);
+        cursor.close();
         db.close();
         return list;
     }
@@ -128,6 +130,7 @@ public class Database extends SQLiteOpenHelper {
                 query, null);
         int count = cursor.getCount();
         List list = entriesAsList(cursor, c);
+        cursor.close();
         db.close();
         return list.get(0);
     }
@@ -198,6 +201,7 @@ public class Database extends SQLiteOpenHelper {
 
         cursor.moveToFirst();
         Object data = makeOneEntry(cursor, c);
+        cursor.close();
         db.close();
         return data;
     }

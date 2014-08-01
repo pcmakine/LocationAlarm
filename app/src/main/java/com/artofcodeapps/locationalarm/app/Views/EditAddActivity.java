@@ -102,6 +102,7 @@ public class EditAddActivity extends ActionBarActivity {
         if(location != null){
             reminder.setReminderLocation(new ReminderLocation(location));
         }
+        reminder.turnOn();
         mySwitch.setChecked(true);
         editMode = false;
     }
@@ -189,6 +190,7 @@ public class EditAddActivity extends ActionBarActivity {
     private String getEditTextContent(int viewID){
         return ((EditText) findViewById(viewID)).getText().toString();
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
